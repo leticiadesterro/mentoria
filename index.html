@@ -40,6 +40,13 @@ padding:18px;
 margin:15px 0;
 border-radius:12px;
 box-shadow:0 4px 12px rgba(0,0,0,0.1);
+transition:0.3s;
+}
+
+.card.finalizado{
+background:#444;
+color:white;
+opacity:0.85;
 }
 
 .fix{border-left:8px solid #e74c3c;}
@@ -53,6 +60,11 @@ font-size:20px;
 margin:25px 0;
 font-weight:bold;
 text-align:center;
+}
+
+.rendimento{
+margin-top:10px;
+font-weight:bold;
 }
 </style>
 </head>
@@ -83,7 +95,7 @@ R90:10
 
 const PRIORIDADE = ["FIX","R7","R15","R30","R90"];
 
-const DATA_INICIO = new Date(2026,0,10); // 10 janeiro 2026
+const DATA_INICIO = new Date(2026,0,10);
 
 function parseDateLocal(dateString){
 const parts = dateString.split("-");
@@ -92,8 +104,8 @@ return new Date(parts[0], parts[1]-1, parts[2]);
 
 function inicioDaSemanaSabado(data){
 let d = new Date(data);
-let dia = d.getDay(); // 0 dom, 6 sab
-let diff = (dia - 6 + 7) % 7; 
+let dia = d.getDay();
+let diff = (dia - 6 + 7) % 7;
 d.setDate(d.getDate() - diff);
 d.setHours(0,0,0,0);
 return d;
@@ -105,7 +117,6 @@ const inicioBase = inicioDaSemanaSabado(DATA_INICIO);
 const diff = inicioSemana.getTime() - inicioBase.getTime();
 return Math.floor(diff/(1000*60*60*24*7)) + 1;
 }
-
 
 const aulas = [
 ["2026-01-10","SD ICTERICIA I (HEPATITES)"],
@@ -225,7 +236,6 @@ if(diff===1)ativos.push({tema:a[1],fase:"R7"});
 if(diff===2)ativos.push({tema:a[1],fase:"R15"});
 if(diff===4)ativos.push({tema:a[1],fase:"R30"});
 if(diff===12)ativos.push({tema:a[1],fase:"R90"});
-
 });
 
 let totalMin=0;
@@ -239,7 +249,6 @@ totalMin+=x.min;
 let restante = META_SEMANAL - totalMin;
 
 if(restante>0){
-
 PRIORIDADE.forEach(fase=>{
 let grupo = ativos.filter(x=>x.fase===fase);
 if(grupo.length>0 && restante>0){
@@ -265,22 +274,47 @@ document.getElementById("saida").innerHTML=html;
 return;
 }
 
-let totalSug=ativos.reduce((a,b)=>a+b.sugerida,0);
-
-ativos.forEach(x=>{
+ativos.forEach((x,index)=>{
 html+=`
-<div class="card ${x.fase.toLowerCase()}">
+<div class="card ${x.fase.toLowerCase()}" id="card${index}">
 <strong>${x.tema}</strong><br><br>
 FASE: ${x.fase}<br><br>
 QUESTOES: ${x.min} (MIN) / ${x.sugerida} (SUGERIDA)<br><br>
 MEDIA DIARIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
+
+<br><br>
+
+<input type="number" placeholder="QUANTAS FIZ" id="feitas${index}" oninput="calcularRendimento(${index})">
+<input type="number" placeholder="QUANTAS ERREI" id="erros${index}" oninput="calcularRendimento(${index})">
+
+<div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
+
+<button onclick="finalizar(${index})">FINALIZAR</button>
+
 </div>
 `;
 });
 
-html+=`<div class="total">TOTAL SUGERIDO: ${totalSug} QUESTOES</div>`;
-
 document.getElementById("saida").innerHTML=html;
+}
+
+function calcularRendimento(i){
+let feitas = parseInt(document.getElementById("feitas"+i).value) || 0;
+let erros = parseInt(document.getElementById("erros"+i).value) || 0;
+
+if(feitas>0 && erros<=feitas){
+let acertos = feitas - erros;
+let perc = ((acertos/feitas)*100).toFixed(1);
+document.getElementById("rend"+i).innerHTML = "RENDIMENTO: " + perc + "%";
+}else{
+document.getElementById("rend"+i).innerHTML = "RENDIMENTO: -";
+}
+}
+
+function finalizar(i){
+let card = document.getElementById("card"+i);
+card.classList.add("finalizado");
+document.getElementById("saida").appendChild(card);
 }
 
 </script>
