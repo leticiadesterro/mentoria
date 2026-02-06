@@ -59,7 +59,7 @@ text-align:center;
 
 <body>
 
-<h1>PLANEJAMENTO 2026</h1>
+<h1>PROJETO LETI RESIDENTE 2027</h1>
 
 <label>Escolha a data atual:</label>
 <input type="date" id="dataEscolhida">
@@ -92,11 +92,13 @@ return new Date(parts[0], parts[1]-1, parts[2]);
 
 function inicioDaSemanaSabado(data){
 let d = new Date(data);
-let dia = d.getDay();
-let diff = (dia + 1) % 7;
+let dia = d.getDay(); // 0 dom, 6 sab
+let diff = (dia - 6 + 7) % 7; 
 d.setDate(d.getDate() - diff);
+d.setHours(0,0,0,0);
 return d;
 }
+
 function numeroSemana(data){
 const inicioSemana = inicioDaSemanaSabado(data);
 const inicioBase = inicioDaSemanaSabado(DATA_INICIO);
