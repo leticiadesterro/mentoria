@@ -17,9 +17,9 @@ text-align:center;
 }
 
 input,button{
-padding:14px;
-font-size:18px;
-margin:8px 0;
+padding:12px;
+font-size:16px;
+margin:6px 0;
 width:100%;
 border-radius:8px;
 border:1px solid #ccc;
@@ -40,13 +40,6 @@ padding:18px;
 margin:15px 0;
 border-radius:12px;
 box-shadow:0 4px 12px rgba(0,0,0,0.1);
-transition:0.3s;
-}
-
-.card.finalizado{
-background:#444;
-color:white;
-opacity:0.85;
 }
 
 .fix{border-left:8px solid #e74c3c;}
@@ -60,11 +53,6 @@ font-size:20px;
 margin:25px 0;
 font-weight:bold;
 text-align:center;
-}
-
-.rendimento{
-margin-top:10px;
-font-weight:bold;
 }
 </style>
 </head>
@@ -83,19 +71,10 @@ font-weight:bold;
 
 document.getElementById("btnCalcular").addEventListener("click", calcular);
 
-const META_SEMANAL = 350;
-
-const MINIMO = {
-FIX:60,
-R7:20,
-R15:15,
-R30:10,
-R90:10
-};
-
 const PRIORIDADE = ["FIX","R7","R15","R30","R90"];
-
 const DATA_INICIO = new Date(2026,0,10);
+
+/* ====================== FUNÇÕES DATA ====================== */
 
 function parseDateLocal(dateString){
 const parts = dateString.split("-");
@@ -105,9 +84,8 @@ return new Date(parts[0], parts[1]-1, parts[2]);
 function inicioDaSemanaSabado(data){
 let d = new Date(data);
 let dia = d.getDay();
-let diff = (dia - 6 + 7) % 7;
+let diff = (dia + 1) % 7;
 d.setDate(d.getDate() - diff);
-d.setHours(0,0,0,0);
 return d;
 }
 
@@ -115,8 +93,23 @@ function numeroSemana(data){
 const inicioSemana = inicioDaSemanaSabado(data);
 const inicioBase = inicioDaSemanaSabado(DATA_INICIO);
 const diff = inicioSemana.getTime() - inicioBase.getTime();
-return Math.floor(diff/(1000*60*60*24*7)) + 1;
+return Math.floor(diff/(1000*60*60*24*7));
 }
+
+/* ====================== MEMÓRIA ====================== */
+
+function salvarProgresso(tema, feitos, acertos, finalizado){
+let dados = JSON.parse(localStorage.getItem("progresso")) || {};
+dados[tema] = {feitos, acertos, finalizado};
+localStorage.setItem("progresso", JSON.stringify(dados));
+}
+
+function obterProgresso(tema){
+let dados = JSON.parse(localStorage.getItem("progresso")) || {};
+return dados[tema] || {feitos:0, acertos:0, finalizado:false};
+}
+
+/* ====================== AULAS ====================== */
 
 const aulas = [
 const aulas = [
@@ -217,6 +210,9 @@ const aulas = [
 ["2026-11-14","ORTOPEDIA II"]
 ];
 
+
+/* ====================== CÁLCULO ====================== */
+
 function calcular(){
 
 const dataInput = document.getElementById("dataEscolhida").value;
@@ -232,66 +228,57 @@ const dataAula = parseDateLocal(a[0]);
 const semanaAula = numeroSemana(dataAula);
 const diff = semanaAtual - semanaAula;
 
-if(diff===0)ativos.push({tema:a[1],fase:"FIX"});
-if(diff===1)ativos.push({tema:a[1],fase:"R7"});
-if(diff===2)ativos.push({tema:a[1],fase:"R15"});
-if(diff===4)ativos.push({tema:a[1],fase:"R30"});
-if(diff===12)ativos.push({tema:a[1],fase:"R90"});
+if(diff===1)ativos.push({tema:a[1],fase:"FIX"});
+if(diff===2)ativos.push({tema:a[1],fase:"R7"});
+if(diff===3)ativos.push({tema:a[1],fase:"R15"});
+if(diff===5)ativos.push({tema:a[1],fase:"R30"});
+if(diff===13)ativos.push({tema:a[1],fase:"R90"});
 });
-
-let totalMin=0;
-
-ativos.forEach(x=>{
-x.min = MINIMO[x.fase];
-x.sugerida = x.min;
-totalMin+=x.min;
-});
-
-let restante = META_SEMANAL - totalMin;
-
-if(restante>0){
-PRIORIDADE.forEach(fase=>{
-let grupo = ativos.filter(x=>x.fase===fase);
-if(grupo.length>0 && restante>0){
-let add = Math.floor(restante/grupo.length);
-grupo.forEach(x=>x.sugerida+=add);
-restante -= add*grupo.length;
-}
-});
-
-let i=0;
-while(restante>0 && ativos.length>0){
-ativos[i%ativos.length].sugerida+=1;
-restante--;
-i++;
-}
-}
-
-let html=`<div class="total">SEMANA ${semanaAtual}</div>`;
 
 if(ativos.length===0){
-html+="NENHUM TEMA PROGRAMADO.";
-document.getElementById("saida").innerHTML=html;
+document.getElementById("saida").innerHTML="<div class='total'>NENHUM TEMA PROGRAMADO</div>";
 return;
 }
 
-ativos.forEach((x,index)=>{
+/* ORDEM POR PRIORIDADE */
+ativos.sort((a,b)=>{
+return PRIORIDADE.indexOf(a.fase) - PRIORIDADE.indexOf(b.fase);
+});
+
+/* FINALIZADOS DESCEM */
+ativos.sort((a,b)=>{
+let pa = obterProgresso(a.tema).finalizado ? 1 : 0;
+let pb = obterProgresso(b.tema).finalizado ? 1 : 0;
+return pa - pb;
+});
+
+let html=`<div class="total">SEMANA ${semanaAtual}</div>`;
+
+ativos.forEach(x=>{
+
+let prog = obterProgresso(x.tema);
+let porcentagem = prog.feitos>0 ? Math.round((prog.acertos/prog.feitos)*100) : 0;
+
 html+=`
-<div class="card ${x.fase.toLowerCase()}" id="card${index}">
+<div class="card ${x.fase.toLowerCase()}">
 <strong>${x.tema}</strong><br><br>
+
 FASE: ${x.fase}<br><br>
-QUESTOES: ${x.min} (MIN) / ${x.sugerida} (SUGERIDA)<br><br>
-MEDIA DIARIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
+
+Feitas:
+<input type="number" value="${prog.feitos}" 
+onchange="atualizar('${x.tema}', this.value, null)">
+
+Acertos:
+<input type="number" value="${prog.acertos}" 
+onchange="atualizar('${x.tema}', null, this.value)">
 
 <br><br>
+Rendimento: <strong>${porcentagem}%</strong><br><br>
 
-<input type="number" placeholder="QUANTAS FIZ" id="feitas${index}" oninput="calcularRendimento(${index})">
-<input type="number" placeholder="QUANTAS ERREI" id="erros${index}" oninput="calcularRendimento(${index})">
-
-<div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
-
-<button onclick="finalizar(${index})">FINALIZAR</button>
-
+<button onclick="finalizar('${x.tema}')">
+${prog.finalizado ? "DESFAZER" : "FINALIZAR"}
+</button>
 </div>
 `;
 });
@@ -299,27 +286,26 @@ MEDIA DIARIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
 document.getElementById("saida").innerHTML=html;
 }
 
-function calcularRendimento(i){
-let feitas = parseInt(document.getElementById("feitas"+i).value) || 0;
-let erros = parseInt(document.getElementById("erros"+i).value) || 0;
+/* ====================== AÇÕES ====================== */
 
-if(feitas>0 && erros<=feitas){
-let acertos = feitas - erros;
-let perc = ((acertos/feitas)*100).toFixed(1);
-document.getElementById("rend"+i).innerHTML = "RENDIMENTO: " + perc + "%";
-}else{
-document.getElementById("rend"+i).innerHTML = "RENDIMENTO: -";
-}
+function atualizar(tema, feitos, acertos){
+let prog = obterProgresso(tema);
+
+if(feitos!==null) prog.feitos = parseInt(feitos) || 0;
+if(acertos!==null) prog.acertos = parseInt(acertos) || 0;
+
+salvarProgresso(tema, prog.feitos, prog.acertos, prog.finalizado);
+calcular();
 }
 
-function finalizar(i){
-let card = document.getElementById("card"+i);
-card.classList.add("finalizado");
-document.getElementById("saida").appendChild(card);
+function finalizar(tema){
+let prog = obterProgresso(tema);
+prog.finalizado = !prog.finalizado;
+salvarProgresso(tema, prog.feitos, prog.acertos, prog.finalizado);
+calcular();
 }
 
 </script>
 
 </body>
 </html>
-
