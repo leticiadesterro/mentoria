@@ -2,18 +2,19 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>PROJETO LETI RESIDENTE</title>
+<title>Projeto Leti Residente</title>
 
 <style>
 
 body{
-font-family:Arial;
-background:#f2f4f8;
-margin:30px;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+background:#eef2f7;
+margin:35px;
 }
 
 h1{
 text-align:center;
+margin-bottom:30px;
 }
 
 input,button{
@@ -21,31 +22,72 @@ width:100%;
 padding:12px;
 margin-top:10px;
 font-size:16px;
+border-radius:8px;
+border:1px solid #d0d7e2;
+}
+
+button{
+background:#2c7be5;
+color:white;
+border:none;
+font-weight:600;
+cursor:pointer;
+transition:.2s;
+}
+
+button:hover{
+background:#1a68d1;
 }
 
 .card{
 background:white;
-padding:20px;
-margin-top:15px;
-border-radius:10px;
-box-shadow:0 3px 10px rgba(0,0,0,0.08);
+padding:22px;
+margin-top:18px;
+border-radius:14px;
+box-shadow:0 6px 18px rgba(0,0,0,.06);
+transition:.25s;
 }
 
-.fix{border-left:8px solid #e74c3c;}
-.r7{border-left:8px solid #f39c12;}
-.r15{border-left:8px solid #3498db;}
-.r30{border-left:8px solid #2ecc71;}
-.r90{border-left:8px solid #9b59b6;}
-
-.total{
-font-size:22px;
-font-weight:bold;
-text-align:center;
-margin-top:20px;
+.card:hover{
+transform:translateY(-3px);
 }
+
+/* cores das fases */
+
+.fix{border-left:10px solid #ff6b6b;}
+.r7{border-left:10px solid #ffa94d;}
+.r15{border-left:10px solid #4dabf7;}
+.r30{border-left:10px solid #51cf66;}
+.r90{border-left:10px solid #b197fc;}
+
+/* finalizado bonito */
 
 .finalizado{
-opacity:.45;
+background:#e6f4ea;
+border-left:10px solid #2f9e44 !important;
+}
+
+.total{
+font-size:24px;
+font-weight:700;
+text-align:center;
+margin-top:25px;
+color:#2b2f36;
+}
+
+.metaBox{
+background:white;
+padding:18px;
+border-radius:12px;
+box-shadow:0 4px 14px rgba(0,0,0,.05);
+margin-bottom:20px;
+text-align:center;
+font-weight:600;
+}
+
+.rendimento{
+margin-top:10px;
+font-weight:600;
 }
 
 </style>
@@ -64,9 +106,7 @@ opacity:.45;
 
 <script>
 
-/**********************
-CONFIGURAÇÕES
-**********************/
+/******** CONFIG ********/
 
 const META = 350;
 
@@ -78,7 +118,11 @@ R30:10,
 R90:10
 };
 
-const DATA_BASE = new Date(2026,0,10
+const DATA_BASE = new Date(2026,0,10);
+
+/******** CRONOGRAMA ********/
+
+const aulas = [
 
 const aulas = [
 ["2026-01-10","SD ICTERICIA I (HEPATITES)"],
@@ -179,23 +223,12 @@ const aulas = [
 ];
 
 function semanaIndex(data){
-
-let d = new Date(data);
-
-let diff = d - DATA_BASE;
-
-return Math.floor(diff / (7*24*60*60*1000));
-
+return Math.floor((data - DATA_BASE)/(7*24*60*60*1000));
 }
-
-/**********************
-GERAR ATIVOS
-**********************/
 
 function gerarAtivos(data){
 
 let semanaAtual = semanaIndex(data);
-
 let ativos=[];
 
 aulas.forEach(a=>{
@@ -203,7 +236,7 @@ aulas.forEach(a=>{
 let semanaAula = semanaIndex(new Date(a[0]));
 let diff = semanaAtual - semanaAula;
 
-let fases = [];
+let fases=[];
 
 if(diff===0) fases.push("FIX");
 if(diff===1) fases.push("R7");
@@ -216,7 +249,8 @@ a[1].forEach(tema=>{
 ativos.push({
 tema,
 fase:f,
-min:MIN[f]
+min:MIN[f],
+done:false
 });
 });
 });
@@ -224,12 +258,9 @@ min:MIN[f]
 });
 
 return ativos;
-
 }
 
-/**********************
-DISTRIBUIÇÃO PERFEITA
-**********************/
+/******** DISTRIBUIÇÃO PROPORCIONAL ********/
 
 function distribuir(ativos){
 
@@ -239,7 +270,6 @@ ativos.forEach(a=>{
 a.sugerida = Math.round((a.min/somaMin)*META);
 });
 
-/* ajuste fino */
 let soma = ativos.reduce((s,a)=>s+a.sugerida,0);
 
 while(soma!==META){
@@ -258,9 +288,7 @@ soma--;
 
 }
 
-/**********************
-UI
-**********************/
+/******** UI ********/
 
 function calcular(){
 
@@ -275,35 +303,35 @@ let data = new Date(dataInput+"T00:00:00");
 
 let ativos = gerarAtivos(data);
 
-if(ativos.length===0){
-saida.innerHTML="<div class='total'>SEMANA SEM CONTEÚDO</div>";
+if(!ativos.length){
+saida.innerHTML="<div class='total'>Semana sem conteúdos</div>";
 return;
 }
 
 distribuir(ativos);
 
-let html=`<div class="total">META: ${META} QUESTÕES</div>`;
+let html=`<div class="metaBox">META SEMANAL: ${META} QUESTÕES</div>`;
 
 ativos.forEach((a,i)=>{
 
 html+=`
 <div class="card ${a.fase.toLowerCase()}" id="c${i}">
 
-<b>${a.tema}</b><br><br>
+<b style="font-size:18px">${a.tema}</b><br><br>
 
-FASE: ${a.fase}<br>
-MÍNIMO: ${a.min}<br>
-IDEAL: ${a.sugerida}<br>
-MÉDIA/DIA: ${Math.ceil(a.sugerida/5)}
+Fase: ${a.fase}<br>
+Mínimo: ${a.min}<br>
+Ideal: ${a.sugerida}<br>
+Média/dia: ${Math.ceil(a.sugerida/5)}
 
 <br><br>
 
 <input type="number" placeholder="Feitas" id="f${i}" oninput="rend(${i})">
 <input type="number" placeholder="Erros" id="e${i}" oninput="rend(${i})">
 
-<div id="r${i}">Rendimento: -</div>
+<div class="rendimento" id="r${i}">Rendimento: -</div>
 
-<button onclick="finalizar(${i})">FINALIZAR</button>
+<button id="b${i}" onclick="toggle(${i})">FINALIZAR</button>
 
 </div>
 `;
@@ -311,31 +339,39 @@ MÉDIA/DIA: ${Math.ceil(a.sugerida/5)}
 });
 
 saida.innerHTML=html;
-
 }
 
-/**********************
-RENDIMENTO
-**********************/
+/******** RENDIMENTO ********/
 
 function rend(i){
 
-let f = parseInt(document.getElementById("f"+i).value)||0;
-let e = parseInt(document.getElementById("e"+i).value)||0;
+let f=parseInt(document.getElementById("f"+i).value)||0;
+let e=parseInt(document.getElementById("e"+i).value)||0;
 
 if(f>0 && e<=f){
-
-let p = (((f-e)/f)*100).toFixed(1);
-
-document.getElementById("r"+i).innerText=
-"Rendimento: "+p+"%";
-
+let p=((f-e)/f*100).toFixed(1);
+document.getElementById("r"+i).innerText="Rendimento: "+p+"%";
 }
 
 }
 
-function finalizar(i){
-document.getElementById("c"+i).classList.add("finalizado");
+/******** TOGGLE FINALIZAR ********/
+
+function toggle(i){
+
+let card=document.getElementById("c"+i);
+let btn=document.getElementById("b"+i);
+
+if(card.classList.contains("finalizado")){
+card.classList.remove("finalizado");
+btn.innerText="FINALIZAR";
+btn.style.background="#2c7be5";
+}else{
+card.classList.add("finalizado");
+btn.innerText="REABRIR";
+btn.style.background="#2f9e44";
+}
+
 }
 
 </script>
