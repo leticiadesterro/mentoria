@@ -276,11 +276,11 @@ const dataAula = parseDateLocal(a[0]);
 const semanaAula = numeroSemana(dataAula);
 const diff = semanaAtual - semanaAula;
 
-if(diff===1)ativos.push({tema:a[1],fase:"FIX"});
-if(diff===2)ativos.push({tema:a[1],fase:"R7"});
-if(diff===3)ativos.push({tema:a[1],fase:"R15"});
-if(diff===5)ativos.push({tema:a[1],fase:"R30"});
-if(diff===13)ativos.push({tema:a[1],fase:"R90"});
+if(diff===0)ativos.push({tema:a[1],fase:"FIX"});
+if(diff===1)ativos.push({tema:a[1],fase:"R7"});
+if(diff===2)ativos.push({tema:a[1],fase:"R15"});
+if(diff===4)ativos.push({tema:a[1],fase:"R30"});
+if(diff===12)ativos.push({tema:a[1],fase:"R90"});
 });
 
 if(ativos.length===0){
