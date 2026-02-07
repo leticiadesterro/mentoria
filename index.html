@@ -6,6 +6,7 @@
 <title>PLANEJAMENTO 2026</title>
 
 <style>
+
 body{
 font-family:Arial, sans-serif;
 margin:20px;
@@ -17,9 +18,9 @@ text-align:center;
 }
 
 input,button{
-padding:12px;
-font-size:16px;
-margin:6px 0;
+padding:14px;
+font-size:18px;
+margin:8px 0;
 width:100%;
 border-radius:8px;
 border:1px solid #ccc;
@@ -27,12 +28,23 @@ box-sizing:border-box;
 }
 
 button{
-background:#111;
+background:linear-gradient(135deg,#6366F1,#4F46E5);
 color:white;
 border:none;
 font-weight:bold;
 cursor:pointer;
+transition:0.25s;
 }
+
+button:hover{
+transform:translateY(-2px);
+box-shadow:0 6px 14px rgba(79,70,229,0.25);
+}
+
+button:active{
+transform:scale(0.98);
+}
+
 
 .card{
 background:white;
@@ -40,6 +52,15 @@ padding:18px;
 margin:15px 0;
 border-radius:12px;
 box-shadow:0 4px 12px rgba(0,0,0,0.1);
+transition:0.25s ease;
+}
+
+/* NOVA COR — verde suave */
+.card.finalizado{
+background:#ECFDF5;
+color:#065F46;
+border-left:8px solid #10B981;
+opacity:1;
 }
 
 .fix{border-left:8px solid #e74c3c;}
@@ -54,12 +75,18 @@ margin:25px 0;
 font-weight:bold;
 text-align:center;
 }
+
+.rendimento{
+margin-top:10px;
+font-weight:bold;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>PLANEJAMENTO 2026</h1>
+<h1>PROJETO LETI RESIDENTE 2027</h1>
 
 <label>Escolha a data atual:</label>
 <input type="date" id="dataEscolhida">
@@ -67,14 +94,32 @@ text-align:center;
 
 <div id="saida"></div>
 
+<div id="metaResumo" style="
+margin-top:20px;
+padding:14px;
+border-radius:12px;
+background:#EEF2FF;
+color:#1E293B;
+font-weight:600;
+text-align:center;
+box-shadow:0 4px 10px rgba(0,0,0,0.05);
+"></div>
+
 <script>
 
 document.getElementById("btnCalcular").addEventListener("click", calcular);
 
-const PRIORIDADE = ["FIX","R7","R15","R30","R90"];
-const DATA_INICIO = new Date(2026,0,10);
+const META_SEMANAL = 350;
 
-/* ====================== FUNÇÕES DATA ====================== */
+const MINIMO = {
+FIX:60,
+R7:20,
+R15:15,
+R30:10,
+R90:10
+};
+
+const DATA_INICIO = new Date(2026,0,10);
 
 function parseDateLocal(dateString){
 const parts = dateString.split("-");
@@ -84,8 +129,9 @@ return new Date(parts[0], parts[1]-1, parts[2]);
 function inicioDaSemanaSabado(data){
 let d = new Date(data);
 let dia = d.getDay();
-let diff = (dia + 1) % 7;
+let diff = (dia - 6 + 7) % 7;
 d.setDate(d.getDate() - diff);
+d.setHours(0,0,0,0);
 return d;
 }
 
@@ -93,25 +139,9 @@ function numeroSemana(data){
 const inicioSemana = inicioDaSemanaSabado(data);
 const inicioBase = inicioDaSemanaSabado(DATA_INICIO);
 const diff = inicioSemana.getTime() - inicioBase.getTime();
-return Math.floor(diff/(1000*60*60*24*7));
+return Math.floor(diff/(1000*60*60*24*7)) + 1;
 }
 
-/* ====================== MEMÓRIA ====================== */
-
-function salvarProgresso(tema, feitos, acertos, finalizado){
-let dados = JSON.parse(localStorage.getItem("progresso")) || {};
-dados[tema] = {feitos, acertos, finalizado};
-localStorage.setItem("progresso", JSON.stringify(dados));
-}
-
-function obterProgresso(tema){
-let dados = JSON.parse(localStorage.getItem("progresso")) || {};
-return dados[tema] || {feitos:0, acertos:0, finalizado:false};
-}
-
-/* ====================== AULAS ====================== */
-
-const aulas = [
 const aulas = [
 ["2026-01-10","SD ICTERICIA I (HEPATITES)"],
 ["2026-01-10","DOENCAS EXANTEMATICAS"],
@@ -210,9 +240,6 @@ const aulas = [
 ["2026-11-14","ORTOPEDIA II"]
 ];
 
-
-/* ====================== CÁLCULO ====================== */
-
 function calcular(){
 
 const dataInput = document.getElementById("dataEscolhida").value;
@@ -228,57 +255,78 @@ const dataAula = parseDateLocal(a[0]);
 const semanaAula = numeroSemana(dataAula);
 const diff = semanaAtual - semanaAula;
 
-if(diff===1)ativos.push({tema:a[1],fase:"FIX"});
-if(diff===2)ativos.push({tema:a[1],fase:"R7"});
-if(diff===3)ativos.push({tema:a[1],fase:"R15"});
-if(diff===5)ativos.push({tema:a[1],fase:"R30"});
-if(diff===13)ativos.push({tema:a[1],fase:"R90"});
+if(diff===0)ativos.push({tema:a[1],fase:"FIX"});
+if(diff===1)ativos.push({tema:a[1],fase:"R7"});
+if(diff===2)ativos.push({tema:a[1],fase:"R15"});
+if(diff===4)ativos.push({tema:a[1],fase:"R30"});
+if(diff===12)ativos.push({tema:a[1],fase:"R90"});
 });
 
-if(ativos.length===0){
-document.getElementById("saida").innerHTML="<div class='total'>NENHUM TEMA PROGRAMADO</div>";
-return;
+let totalMin=0;
+
+ativos.forEach(x=>{
+x.min = MINIMO[x.fase];
+totalMin += x.min;
+});
+
+/* distribuição proporcional correta */
+
+let somaSugerida = 0;
+
+ativos.forEach(x=>{
+x.sugerida = Math.round((x.min / totalMin) * META_SEMANAL);
+somaSugerida += x.sugerida;
+});
+
+/* ajuste fino para bater exatamente 350 */
+
+let diferenca = META_SEMANAL - somaSugerida;
+let i = 0;
+
+while(diferenca !== 0){
+
+if(diferenca > 0){
+ativos[i % ativos.length].sugerida++;
+diferenca--;
+}else{
+if(ativos[i % ativos.length].sugerida > 1){
+ativos[i % ativos.length].sugerida--;
+diferenca++;
+}
 }
 
-/* ORDEM POR PRIORIDADE */
-ativos.sort((a,b)=>{
-return PRIORIDADE.indexOf(a.fase) - PRIORIDADE.indexOf(b.fase);
-});
+i++;
+}
 
-/* FINALIZADOS DESCEM */
-ativos.sort((a,b)=>{
-let pa = obterProgresso(a.tema).finalizado ? 1 : 0;
-let pb = obterProgresso(b.tema).finalizado ? 1 : 0;
-return pa - pb;
-});
+document.getElementById("metaResumo").innerHTML =
+`Meta semanal recomendada: <strong>${totalMin}</strong> questões (mínimo necessário)
+• Meta ideal: <strong>${META_SEMANAL}</strong> questões`;
 
 let html=`<div class="total">SEMANA ${semanaAtual}</div>`;
 
-ativos.forEach(x=>{
+if(ativos.length===0){
+html+="NENHUM TEMA PROGRAMADO.";
+document.getElementById("saida").innerHTML=html;
+return;
+}
 
-let prog = obterProgresso(x.tema);
-let porcentagem = prog.feitos>0 ? Math.round((prog.acertos/prog.feitos)*100) : 0;
-
+ativos.forEach((x,index)=>{
 html+=`
-<div class="card ${x.fase.toLowerCase()}">
+<div class="card ${x.fase.toLowerCase()}" id="card${index}">
 <strong>${x.tema}</strong><br><br>
-
 FASE: ${x.fase}<br><br>
-
-Feitas:
-<input type="number" value="${prog.feitos}" 
-onchange="atualizar('${x.tema}', this.value, null)">
-
-Acertos:
-<input type="number" value="${prog.acertos}" 
-onchange="atualizar('${x.tema}', null, this.value)">
+QUESTOES: ${x.min} (MIN) / ${x.sugerida} (SUGERIDA)<br><br>
+MEDIA DIARIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
 
 <br><br>
-Rendimento: <strong>${porcentagem}%</strong><br><br>
 
-<button onclick="finalizar('${x.tema}')">
-${prog.finalizado ? "DESFAZER" : "FINALIZAR"}
-</button>
+<input type="number" placeholder="QUANTAS FIZ" id="feitas${index}" oninput="calcularRendimento(${index})">
+<input type="number" placeholder="QUANTAS ERREI" id="erros${index}" oninput="calcularRendimento(${index})">
+
+<div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
+
+<button onclick="finalizar(${index})">FINALIZAR</button>
+
 </div>
 `;
 });
@@ -286,23 +334,40 @@ ${prog.finalizado ? "DESFAZER" : "FINALIZAR"}
 document.getElementById("saida").innerHTML=html;
 }
 
-/* ====================== AÇÕES ====================== */
+/* cálculo de rendimento */
 
-function atualizar(tema, feitos, acertos){
-let prog = obterProgresso(tema);
+function calcularRendimento(i){
+let feitas = parseInt(document.getElementById("feitas"+i).value) || 0;
+let erros = parseInt(document.getElementById("erros"+i).value) || 0;
 
-if(feitos!==null) prog.feitos = parseInt(feitos) || 0;
-if(acertos!==null) prog.acertos = parseInt(acertos) || 0;
-
-salvarProgresso(tema, prog.feitos, prog.acertos, prog.finalizado);
-calcular();
+if(feitas>0 && erros<=feitas){
+let acertos = feitas - erros;
+let perc = ((acertos/feitas)*100).toFixed(1);
+document.getElementById("rend"+i).innerHTML = "RENDIMENTO: " + perc + "%";
+}else{
+document.getElementById("rend"+i).innerHTML = "RENDIMENTO: -";
+}
 }
 
-function finalizar(tema){
-let prog = obterProgresso(tema);
-prog.finalizado = !prog.finalizado;
-salvarProgresso(tema, prog.feitos, prog.acertos, prog.finalizado);
-calcular();
+/* botão com reversão */
+
+function finalizar(i){
+
+let card = document.getElementById("card"+i);
+let botao = card.querySelector("button");
+
+if(card.classList.contains("finalizado")){
+
+card.classList.remove("finalizado");
+botao.innerText = "FINALIZAR";
+
+}else{
+
+card.classList.add("finalizado");
+botao.innerText = "REABRIR";
+
+}
+
 }
 
 </script>
