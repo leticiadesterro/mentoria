@@ -13,9 +13,7 @@ margin:20px;
 background:#f4f6f9;
 }
 
-h1{
-text-align:center;
-}
+h1{text-align:center;}
 
 input,button{
 padding:14px;
@@ -41,26 +39,18 @@ transform:translateY(-2px);
 box-shadow:0 6px 14px rgba(79,70,229,0.25);
 }
 
-button:active{
-transform:scale(0.98);
-}
-
-
 .card{
 background:white;
 padding:18px;
 margin:15px 0;
 border-radius:12px;
 box-shadow:0 4px 12px rgba(0,0,0,0.1);
-transition:0.25s ease;
 }
 
-/* NOVA COR — verde suave */
 .card.finalizado{
 background:#ECFDF5;
 color:#065F46;
 border-left:8px solid #10B981;
-opacity:1;
 }
 
 .fix{border-left:8px solid #e74c3c;}
@@ -68,17 +58,13 @@ opacity:1;
 .r15{border-left:8px solid #3498db;}
 .r30{border-left:8px solid #2ecc71;}
 .r90{border-left:8px solid #9b59b6;}
+.simulado{border-left:8px solid #111;}
 
 .total{
 font-size:20px;
 margin:25px 0;
 font-weight:bold;
 text-align:center;
-}
-
-.rendimento{
-margin-top:10px;
-font-weight:bold;
 }
 
 </style>
@@ -90,24 +76,13 @@ font-weight:bold;
 
 <label>Escolha a data atual:</label>
 <input type="date" id="dataEscolhida">
-<button id="btnCalcular">CALCULAR</button>
+<button onclick="calcular()">CALCULAR</button>
 
 <div id="saida"></div>
 
-<div id="metaResumo" style="
-margin-top:20px;
-padding:14px;
-border-radius:12px;
-background:#EEF2FF;
-color:#1E293B;
-font-weight:600;
-text-align:center;
-box-shadow:0 4px 10px rgba(0,0,0,0.05);
-"></div>
+<div id="metaResumo"></div>
 
 <script>
-
-document.getElementById("btnCalcular").addEventListener("click", calcular);
 
 const META_SEMANAL = 350;
 
@@ -119,30 +94,54 @@ R30:10,
 R90:10
 };
 
+const SEM_AULA = ["2026-02-14"];
+
 const DATA_INICIO = new Date(2026,0,10);
 
-function parseDateLocal(dateString){
-const parts = dateString.split("-");
-return new Date(parts[0], parts[1]-1, parts[2]);
+function parseDateLocal(d){
+const p=d.split("-");
+return new Date(p[0],p[1]-1,p[2]);
 }
 
-function inicioDaSemanaSabado(data){
-let d = new Date(data);
-let dia = d.getDay();
-let diff = (dia - 6 + 7) % 7;
-d.setDate(d.getDate() - diff);
+function inicioSabado(data){
+let d=new Date(data);
+let diff=(d.getDay()-6+7)%7;
+d.setDate(d.getDate()-diff);
 d.setHours(0,0,0,0);
 return d;
 }
 
-function numeroSemana(data){
-const inicioSemana = inicioDaSemanaSabado(data);
-const inicioBase = inicioDaSemanaSabado(DATA_INICIO);
-const diff = inicioSemana.getTime() - inicioBase.getTime();
-return Math.floor(diff/(1000*60*60*24*7)) + 1;
+/* semana REAL do curso (ignora carnaval) */
+function semanaCurso(data){
+
+let sabadoAtual=inicioSabado(data);
+let contador=0;
+
+for(let d=new Date(DATA_INICIO); d<=sabadoAtual; d.setDate(d.getDate()+7)){
+
+let iso=d.toISOString().split("T")[0];
+
+if(!SEM_AULA.includes(iso)){
+contador++;
+}
 }
 
-const aulas = [
+return contador;
+}
+
+/* pega o sábado válido (se carnaval, volta um) */
+function sabadoValido(data){
+
+let sab=inicioSabado(data);
+
+while(SEM_AULA.includes(sab.toISOString().split("T")[0])){
+sab.setDate(sab.getDate()-7);
+}
+
+return sab;
+}
+
+const aulas=[
 ["2026-01-10","SD ICTERICIA I (HEPATITES)"],
 ["2026-01-10","DOENCAS EXANTEMATICAS"],
 ["2026-01-17","SD ICTERICIA II (VIAS BILIARES)"],
@@ -240,132 +239,115 @@ const aulas = [
 ["2026-11-14","ORTOPEDIA II"]
 ];
 
+/* ordenar fases */
+const ordem=["FIX","R7","R15","R30","R90"];
+
 function calcular(){
 
-const dataInput = document.getElementById("dataEscolhida").value;
-if(!dataInput){ alert("Escolha uma data."); return; }
+const dataInput=document.getElementById("dataEscolhida").value;
+if(!dataInput)return alert("Escolha uma data");
 
-const dataAtual = parseDateLocal(dataInput);
-const semanaAtual = numeroSemana(dataAtual);
+const data=parseDateLocal(dataInput);
+const sabado=sabadoValido(data);
+const semana=semanaCurso(data);
 
-let ativos = [];
+let ativos=[];
+
+/* detectar sábado/domingo */
+if(data.getDay()===6 || data.getDay()===0){
+
+const temas=aulas.filter(a=>a[0]===sabado.toISOString().split("T")[0]);
+
+let html=`<div class="total">SEMANA ${semana}</div>`;
+
+temas.forEach((t,i)=>{
+html+=cardHTML(t[1],"FIX",i,60,60);
+});
+
+/* card simulado */
+html+=`
+<div class="card simulado">
+<strong>SIMULADO COMPLETO</strong><br><br>
+<input type="number" placeholder="TOTAL DE ERROS" oninput="this.nextElementSibling.innerText='ERROS: '+this.value">
+<div>ERROS: -</div>
+</div>
+`;
+
+document.getElementById("saida").innerHTML=html;
+return;
+}
+
+/* fluxo normal */
 
 aulas.forEach(a=>{
-const dataAula = parseDateLocal(a[0]);
-const semanaAula = numeroSemana(dataAula);
-const diff = semanaAtual - semanaAula;
+
+const dataAula=parseDateLocal(a[0]);
+const sabAula=sabadoValido(dataAula);
+
+let diff=(sabado - sabAula)/(1000*60*60*24*7);
 
 if(diff===0)ativos.push({tema:a[1],fase:"FIX"});
 if(diff===1)ativos.push({tema:a[1],fase:"R7"});
 if(diff===2)ativos.push({tema:a[1],fase:"R15"});
 if(diff===4)ativos.push({tema:a[1],fase:"R30"});
 if(diff===12)ativos.push({tema:a[1],fase:"R90"});
+
 });
+
+/* ordenar */
+ativos.sort((a,b)=>ordem.indexOf(a.fase)-ordem.indexOf(b.fase));
 
 let totalMin=0;
 
 ativos.forEach(x=>{
-x.min = MINIMO[x.fase];
-totalMin += x.min;
+x.min=MINIMO[x.fase];
+totalMin+=x.min;
 });
 
-/* distribuição proporcional correta */
-
-let somaSugerida = 0;
+/* distribuir até 350 */
 
 ativos.forEach(x=>{
-x.sugerida = Math.round((x.min / totalMin) * META_SEMANAL);
-somaSugerida += x.sugerida;
+x.sugerida=Math.round((x.min/totalMin)*META_SEMANAL);
 });
 
-/* ajuste fino para bater exatamente 350 */
+document.getElementById("metaResumo").innerHTML=
+`Meta mínima: <strong>${totalMin}</strong> | Meta ideal: <strong>${META_SEMANAL}</strong>`;
 
-let diferenca = META_SEMANAL - somaSugerida;
-let i = 0;
+let html=`<div class="total">SEMANA ${semana}</div>`;
 
-while(diferenca !== 0){
-
-if(diferenca > 0){
-ativos[i % ativos.length].sugerida++;
-diferenca--;
-}else{
-if(ativos[i % ativos.length].sugerida > 1){
-ativos[i % ativos.length].sugerida--;
-diferenca++;
-}
-}
-
-i++;
-}
-
-document.getElementById("metaResumo").innerHTML =
-`Meta semanal recomendada: <strong>${totalMin}</strong> questões (mínimo necessário)
-• Meta ideal: <strong>${META_SEMANAL}</strong> questões`;
-
-let html=`<div class="total">SEMANA ${semanaAtual}</div>`;
-
-if(ativos.length===0){
-html+="NENHUM TEMA PROGRAMADO.";
-document.getElementById("saida").innerHTML=html;
-return;
-}
-
-ativos.forEach((x,index)=>{
-html+=`
-<div class="card ${x.fase.toLowerCase()}" id="card${index}">
-<strong>${x.tema}</strong><br><br>
-FASE: ${x.fase}<br><br>
-QUESTOES: ${x.min} (MIN) / ${x.sugerida} (SUGERIDA)<br><br>
-MEDIA DIARIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
-
-<br><br>
-
-<input type="number" placeholder="QUANTAS FIZ" id="feitas${index}" oninput="calcularRendimento(${index})">
-<input type="number" placeholder="QUANTAS ERREI" id="erros${index}" oninput="calcularRendimento(${index})">
-
-<div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
-
-<button onclick="finalizar(${index})">FINALIZAR</button>
-
-</div>
-`;
+ativos.forEach((x,i)=>{
+html+=cardHTML(x.tema,x.fase,i,x.min,x.sugerida);
 });
 
 document.getElementById("saida").innerHTML=html;
+
 }
 
-/* cálculo de rendimento */
+/* template card */
 
-function calcularRendimento(i){
-let feitas = parseInt(document.getElementById("feitas"+i).value) || 0;
-let erros = parseInt(document.getElementById("erros"+i).value) || 0;
+function cardHTML(tema,fase,i,min,sug){
+return`
+<div class="card ${fase.toLowerCase()}" id="card${i}">
+<strong>${tema}</strong><br><br>
+FASE: ${fase}<br><br>
+QUESTOES: ${min} / ${sug}
 
-if(feitas>0 && erros<=feitas){
-let acertos = feitas - erros;
-let perc = ((acertos/feitas)*100).toFixed(1);
-document.getElementById("rend"+i).innerHTML = "RENDIMENTO: " + perc + "%";
+<input type="number" placeholder="QUANTAS FIZ">
+<button onclick="toggle(${i})">FINALIZAR</button>
+</div>`;
+}
+
+function toggle(i){
+
+let c=document.getElementById("card"+i);
+let b=c.querySelector("button");
+
+if(c.classList.contains("finalizado")){
+c.classList.remove("finalizado");
+b.innerText="FINALIZAR";
 }else{
-document.getElementById("rend"+i).innerHTML = "RENDIMENTO: -";
-}
-}
-
-/* botão com reversão */
-
-function finalizar(i){
-
-let card = document.getElementById("card"+i);
-let botao = card.querySelector("button");
-
-if(card.classList.contains("finalizado")){
-
-card.classList.remove("finalizado");
-botao.innerText = "FINALIZAR";
-
-}else{
-
-card.classList.add("finalizado");
-botao.innerText = "REABRIR";
-
+c.classList.add("finalizado");
+b.innerText="REABRIR";
 }
 
 }
