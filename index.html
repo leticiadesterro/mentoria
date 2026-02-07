@@ -41,6 +41,12 @@ border-radius:12px;
 box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
 
+.card.finalizado{
+background:#ECFDF5;
+color:#065F46;
+border-left:8px solid #10B981;
+}
+
 .fix{border-left:8px solid #e74c3c;}
 .r7{border-left:8px solid #f39c12;}
 .r15{border-left:8px solid #3498db;}
@@ -53,6 +59,11 @@ font-size:20px;
 margin:25px 0;
 font-weight:bold;
 text-align:center;
+}
+
+.rendimento{
+margin-top:10px;
+font-weight:bold;
 }
 
 </style>
@@ -70,7 +81,7 @@ text-align:center;
 
 <script>
 
-const MINIMO = {
+const MINIMO={
 FIX:60,
 R7:20,
 R15:15,
@@ -95,13 +106,12 @@ return d;
 }
 
 /* gera sábados ativos */
-function gerarSabadosAtivos(){
 
+function gerarSabados(){
 let lista=[];
 let atual=new Date(DATA_INICIO);
 
 for(let i=0;i<60;i++){
-
 let iso=atual.toISOString().split("T")[0];
 
 if(!SEM_AULA.includes(iso)){
@@ -114,17 +124,14 @@ atual.setDate(atual.getDate()+7);
 return lista;
 }
 
-const SABADOS=gerarSabadosAtivos();
+const SABADOS=gerarSabados();
 
 function indiceSemana(data){
 
 let sab=sabadoAnterior(data).toISOString().split("T")[0];
-
 let idx=SABADOS.indexOf(sab);
 
 if(idx===-1){
-
-/* se caiu no carnaval -> usa o anterior */
 let d=new Date(sab);
 d.setDate(d.getDate()-7);
 return SABADOS.indexOf(d.toISOString().split("T")[0]);
@@ -244,7 +251,7 @@ let semana=indiceSemana(hoje);
 
 let html=`<div class="total">SEMANA ${semana+1}</div>`;
 
-/* sábado ou domingo */
+/* FIM DE SEMANA */
 
 if(hoje.getDay()===6 || hoje.getDay()===0){
 
@@ -258,24 +265,22 @@ return;
 
 let temas=aulas.filter(a=>a[0]===sabISO);
 
-/* cards presenciais */
-
 temas.forEach((t,i)=>{
 html+=`
 <div class="card fix">
-<strong>Card ${i+1}: AULA PRESENCIAL - ${t[1]}</strong>
+<strong>AULA ${i+1} — ${t[1]}</strong>
 </div>
 `;
 });
 
-/* card simulado */
+/* SIMULADO */
 
 html+=`
 <div class="card simulado">
 <strong>SIMULADO COMPLETO</strong><br><br>
 
-<input type="number" placeholder="NÚMERO DE QUESTÕES" id="q">
-<input type="number" placeholder="ERROS" id="e" oninput="calcSimulado()">
+<input type="number" placeholder="QUANTAS QUESTÕES" id="q">
+<input type="number" placeholder="QUANTOS ERROS" id="e" oninput="calcSimulado()">
 
 <div id="r">RENDIMENTO: -</div>
 
@@ -286,7 +291,7 @@ document.getElementById("saida").innerHTML=html;
 return;
 }
 
-/* fluxo normal */
+/* DIAS NORMAIS */
 
 let ativos=[];
 
@@ -305,18 +310,46 @@ if(diff===12)ativos.push({tema:a[1],fase:"R90"});
 
 ativos.sort((a,b)=>ordem.indexOf(a.fase)-ordem.indexOf(b.fase));
 
-ativos.forEach(x=>{
+ativos.forEach((x,index)=>{
+
 html+=`
-<div class="card ${x.fase.toLowerCase()}">
-<strong>${x.tema}</strong><br>
+<div class="card ${x.fase.toLowerCase()}" id="card${index}">
+<strong>${x.tema}</strong><br><br>
+
 FASE: ${x.fase}<br>
-META: ${MINIMO[x.fase]} questões
+META: ${MINIMO[x.fase]} questões<br><br>
+
+<input type="number" placeholder="QUANTAS FIZ" id="feitas${index}" oninput="calcRendimento(${index})">
+<input type="number" placeholder="QUANTAS ERREI" id="erros${index}" oninput="calcRendimento(${index})">
+
+<div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
+
+<button onclick="finalizar(${index})">FINALIZAR</button>
+
 </div>
 `;
+
 });
 
 document.getElementById("saida").innerHTML=html;
 }
+
+/* rendimento normal */
+
+function calcRendimento(i){
+
+let feitas=document.getElementById("feitas"+i).value;
+let erros=document.getElementById("erros"+i).value;
+
+if(feitas>0 && erros<=feitas){
+let r=((feitas-erros)/feitas*100).toFixed(1);
+document.getElementById("rend"+i).innerText="RENDIMENTO: "+r+"%";
+}else{
+document.getElementById("rend"+i).innerText="RENDIMENTO: -";
+}
+}
+
+/* rendimento simulado */
 
 function calcSimulado(){
 
@@ -328,6 +361,22 @@ let r=((q-e)/q*100).toFixed(1);
 document.getElementById("r").innerText="RENDIMENTO: "+r+"%";
 }else{
 document.getElementById("r").innerText="RENDIMENTO: -";
+}
+}
+
+/* toggle */
+
+function finalizar(i){
+
+let card=document.getElementById("card"+i);
+let btn=card.querySelector("button");
+
+if(card.classList.contains("finalizado")){
+card.classList.remove("finalizado");
+btn.innerText="FINALIZAR";
+}else{
+card.classList.add("finalizado");
+btn.innerText="REABRIR";
 }
 
 }
