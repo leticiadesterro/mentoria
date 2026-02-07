@@ -378,9 +378,22 @@ document.getElementById("simRend").innerHTML = "RENDIMENTO: -";
 }
 
 function finalizar(i){
+
 let card = document.getElementById("card"+i);
+let botao = card.querySelector("button");
+
+if(card.classList.contains("finalizado")){
+
+card.classList.remove("finalizado");
+botao.innerText = "FINALIZAR";
+
+}else{
+
 card.classList.add("finalizado");
-document.getElementById("saida").appendChild(card);
+botao.innerText = "REABRIR";
+
+}
+
 }
 
 </script>
