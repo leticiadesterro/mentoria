@@ -1,4 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLANEJAMENTO 2026</title>
 
+<style>
+body{
+font-family:Arial, sans-serif;
+margin:20px;
+background:#f4f6f9;
+}
+
+h1{
+text-align:center;
+}
+
+input,button{
+padding:14px;
+font-size:18px;
+margin:8px 0;
+width:100%;
+border-radius:8px;
+border:1px solid #ccc;
+box-sizing:border-box;
+}
+
+button{
+background:#4F46E5;
+color:white;
+border:none;
+font-weight:bold;
+cursor:pointer;
+}
+
+.card{
+background:white;
+padding:18px;
+margin:15px 0;
+border-radius:12px;
+box-shadow:0 4px 12px rgba(0,0,0,0.1);
+transition:0.3s;
+}
+
+.card.finalizado{
+background:#C7F9CC;
+color:#1B4332;
+opacity:0.95;
+}
+
+.fix{border-left:8px solid #e74c3c;}
+.r7{border-left:8px solid #f39c12;}
+.r15{border-left:8px solid #3498db;}
+.r30{border-left:8px solid #2ecc71;}
+.r90{border-left:8px solid #9b59b6;}
+
+.total{
+font-size:20px;
+margin:25px 0;
+font-weight:bold;
+text-align:center;
+}
+
+.rendimento{
+margin-top:10px;
+font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>PROJETO LETI RESIDENTE 2027</h1>
+
+<label>Escolha a data atual:</label>
+<input type="date" id="dataEscolhida">
+<button id="btnCalcular">CALCULAR</button>
+
+<div id="saida"></div>
+
+<div id="metaResumo" style="
+margin-top:20px;
+padding:14px;
+border-radius:12px;
+background:#EEF2FF;
+color:#1E293B;
+font-weight:600;
+text-align:center;
+box-shadow:0 4px 10px rgba(0,0,0,0.05);
+"></div>
+
+<script>
+
+document.getElementById("btnCalcular").addEventListener("click", calcular);
+
+const META_SEMANAL = 350;
+
+const MINIMO = {
+FIX:60,
+R7:20,
+R15:15,
+R30:10,
+R90:10
+};
 
 const DATA_INICIO = new Date(2026,0,10);
 const CARNAVAL = "2026-02-14";
