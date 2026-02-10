@@ -12,7 +12,9 @@ margin:20px;
 background:#f4f6f9;
 }
 
-h1{text-align:center;}
+h1{
+text-align:center;
+}
 
 input,button{
 padding:14px;
@@ -60,25 +62,10 @@ font-weight:bold;
 text-align:center;
 }
 
-.bloco{
-font-size:16px;
-text-align:center;
-margin-top:-15px;
-margin-bottom:10px;
-font-weight:bold;
-color:#374151;
-}
-
-.resumoBloco{
-background:#E0F2FE;
-padding:12px;
-border-radius:10px;
-margin-bottom:20px;
-text-align:center;
+.rendimento{
+margin-top:10px;
 font-weight:bold;
 }
-
-.rendimento{margin-top:10px;font-weight:bold;}
 </style>
 </head>
 
@@ -91,7 +78,17 @@ font-weight:bold;
 <button id="btnCalcular">CALCULAR</button>
 
 <div id="saida"></div>
-<div id="metaResumo"></div>
+
+<div id="metaResumo" style="
+margin-top:20px;
+padding:14px;
+border-radius:12px;
+background:#EEF2FF;
+color:#1E293B;
+font-weight:600;
+text-align:center;
+box-shadow:0 4px 10px rgba(0,0,0,0.05);
+"></div>
 
 <script>
 
@@ -99,53 +96,38 @@ document.getElementById("btnCalcular").addEventListener("click", calcular);
 
 const META_SEMANAL = 350;
 
-const MINIMO = { FIX:60, R7:20, R15:15, R30:10, R90:10 };
+const MINIMO = {
+FIX:60,
+R7:20,
+R15:15,
+R30:10,
+R90:10
+};
 
 const DATA_INICIO = new Date(2026,0,10);
 const CARNAVAL = "2026-02-14";
 
 function parseDateLocal(dateString){
-const parts=dateString.split("-");
-return new Date(parts[0],parts[1]-1,parts[2]);
+const parts = dateString.split("-");
+return new Date(parts[0], parts[1]-1, parts[2]);
 }
 
 function inicioDaSemanaSabado(data){
-let d=new Date(data);
-let diff=(d.getDay()-6+7)%7;
-d.setDate(d.getDate()-diff);
+let d = new Date(data);
+let dia = d.getDay();
+let diff = (dia - 6 + 7) % 7;
+d.setDate(d.getDate() - diff);
 d.setHours(0,0,0,0);
 return d;
 }
 
 function numeroSemana(data){
-const inicioSemana=inicioDaSemanaSabado(data);
-const inicioBase=inicioDaSemanaSabado(DATA_INICIO);
-const diff=inicioSemana.getTime()-inicioBase.getTime();
-return Math.floor(diff/(1000*60*60*24*7))+1;
+const inicioSemana = inicioDaSemanaSabado(data);
+const inicioBase = inicioDaSemanaSabado(DATA_INICIO);
+const diff = inicioSemana.getTime() - inicioBase.getTime();
+return Math.floor(diff/(1000*60*60*24*7)) + 1;
 }
 
-function ajustarSemanaCarnaval(data){
-if(data>=new Date(2026,1,16)){return numeroSemana(data)-1;}
-return numeroSemana(data);
-}
-
-function tipoBloco(data){
-return (data.getDay()===6||data.getDay()===0)?"FDS":"SEMANA";
-}
-
-function chaveBloco(semana,bloco){
-return `semana_${semana}_${bloco}`;
-}
-
-function salvarDados(chave,dados){
-localStorage.setItem(chave,JSON.stringify(dados));
-}
-
-function carregarDados(chave){
-return JSON.parse(localStorage.getItem(chave)||"{}");
-}
-
-/* -------- SUA LISTA DE AULAS PERMANECE IGUAL -------- */
 const aulas = [
 ["2026-01-10","SD ICTERICIA I (HEPATITES)"],
 ["2026-01-10","DOENCAS EXANTEMATICAS"],
@@ -244,49 +226,29 @@ const aulas = [
 ["2026-11-14","ORTOPEDIA II"]
 ];
 
-let chaveAtual="";
-let dadosBloco={};
+function ajustarSemanaCarnaval(data){
+if(data >= new Date(2026,1,16)){
+return numeroSemana(data)-1;
+}
+return numeroSemana(data);
+}
 
 function calcular(){
 
-const dataInput=document.getElementById("dataEscolhida").value;
-if(!dataInput){alert("Escolha uma data.");return;}
+const dataInput = document.getElementById("dataEscolhida").value;
+if(!dataInput){ alert("Escolha uma data."); return; }
 
-const dataAtual=parseDateLocal(dataInput);
-const semanaAtual=ajustarSemanaCarnaval(dataAtual);
-const bloco=tipoBloco(dataAtual);
+const dataAtual = parseDateLocal(dataInput);
+const diaSemana = dataAtual.getDay();
 
-chaveAtual=chaveBloco(semanaAtual,bloco);
-dadosBloco=carregarDados(chaveAtual);
-
-let html=`<div class="total">SEMANA ${semanaAtual}</div>`;
-html+=`<div class="bloco">${bloco==="FDS"?"SÁBADO/DOMINGO":"SEGUNDA A SEXTA"}</div>`;
-
-if(bloco==="SEMANA"){
-html+=`<div class="resumoBloco" id="resumoBloco">TOTAL: 0 questões | DESEMPENHO: -</div>`;
-}
-
-if(bloco==="FDS"){
-html+=`
-<div class="card">
-<strong>SIMULADO COMPLETO</strong><br><br>
-<input type="number" placeholder="Número de questões" id="simFeitas" oninput="calcSimulado()">
-<input type="number" placeholder="Erros" id="simErros" oninput="calcSimulado()">
-<div class="rendimento" id="simRend">RENDIMENTO: -</div>
-</div>`;
-document.getElementById("saida").innerHTML=html;
-restaurarSimulado();
-return;
-}
-
-/* -------- BLOCO SEMANA -------- */
-
-let ativos=[];
+const semanaAtual = ajustarSemanaCarnaval(dataAtual);
+let ativos = [];
 
 aulas.forEach(a=>{
-const dataAula=parseDateLocal(a[0]);
-let semanaAula=ajustarSemanaCarnaval(dataAula);
-const diff=semanaAtual-semanaAula;
+const dataAula = parseDateLocal(a[0]);
+let semanaAula = ajustarSemanaCarnaval(dataAula);
+
+const diff = semanaAtual - semanaAula;
 
 if(diff===0)ativos.push({tema:a[1],fase:"FIX"});
 if(diff===1)ativos.push({tema:a[1],fase:"R7"});
@@ -295,112 +257,146 @@ if(diff===4)ativos.push({tema:a[1],fase:"R30"});
 if(diff===12)ativos.push({tema:a[1],fase:"R90"});
 });
 
+ativos.sort((a,b)=>{
+const ordem = ["FIX","R7","R15","R30","R90"];
+return ordem.indexOf(a.fase) - ordem.indexOf(b.fase);
+});
+
+let totalMin=0;
+
+ativos.forEach(x=>{
+x.min = MINIMO[x.fase];
+totalMin += x.min;
+});
+
+ativos.forEach(x=>{
+x.sugerida = Math.round((x.min / totalMin) * META_SEMANAL);
+});
+
+let soma = ativos.reduce((t,x)=>t+x.sugerida,0);
+let diff = META_SEMANAL - soma;
+let i=0;
+
+while(diff!==0){
+ativos[i%ativos.length].sugerida += diff>0?1:-1;
+diff += diff>0?-1:1;
+i++;
+}
+
+document.getElementById("metaResumo").innerHTML =
+`Meta semanal recomendada: <strong>${totalMin}</strong> questões (mínimo necessário)
+• Meta ideal: <strong>${META_SEMANAL}</strong> questões`;
+
+let html=`<div class="total">SEMANA ${semanaAtual}</div>`;
+
+/* FIM DE SEMANA */
+
+if(diaSemana===6 || diaSemana===0){
+
+const sabado = inicioDaSemanaSabado(dataAtual);
+const sabadoStr = sabado.toISOString().split("T")[0];
+
+if(sabadoStr === CARNAVAL){
+html+=`<div class="card"><strong>SEM AULA — CARNAVAL</strong></div>`;
+}else{
+
+const aulasSabado = aulas.filter(a=>a[0]===sabadoStr);
+
+aulasSabado.forEach(a=>{
+html+=`
+<div class="card">
+<strong>AULA — ${a[1]}</strong>
+</div>`;
+});
+}
+
+html+=`
+<div class="card">
+<strong>SIMULADO COMPLETO</strong><br><br>
+
+<input type="number" placeholder="Número de questões" id="simFeitas" oninput="calcSimulado()">
+<input type="number" placeholder="Erros" id="simErros" oninput="calcSimulado()">
+
+<div class="rendimento" id="simRend">RENDIMENTO: -</div>
+</div>
+`;
+
+document.getElementById("saida").innerHTML=html;
+return;
+}
+
+/* SEMANA NORMAL */
+
 ativos.forEach((x,index)=>{
 html+=`
 <div class="card ${x.fase.toLowerCase()}" id="card${index}">
 <strong>${x.tema}</strong><br><br>
+
 FASE: ${x.fase}<br><br>
-<input type="number" placeholder="Quantas fiz" id="feitas${index}" oninput="atualizarCard(${index})">
-<input type="number" placeholder="Quantas errei" id="erros${index}" oninput="atualizarCard(${index})">
+
+QUESTÕES: ${x.min} (MIN) / ${x.sugerida} (SUGERIDA)<br><br>
+
+MÉDIA DIÁRIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
+
+<input type="number" placeholder="Quantas fiz" id="feitas${index}" oninput="calcularRendimento(${index})">
+<input type="number" placeholder="Quantas errei" id="erros${index}" oninput="calcularRendimento(${index})">
+
 <div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
+
 <button onclick="finalizar(${index})">FINALIZAR</button>
-</div>`;
+</div>
+`;
 });
 
 document.getElementById("saida").innerHTML=html;
-restaurarCards();
-atualizarResumo();
 }
 
-/* -------- FUNÇÕES SEMANA -------- */
-
-function atualizarCard(i){
-let feitas=parseInt(document.getElementById("feitas"+i).value)||0;
-let erros=parseInt(document.getElementById("erros"+i).value)||0;
-
-dadosBloco[i]={feitas,erros,finalizado:dadosBloco[i]?.finalizado||false};
-salvarDados(chaveAtual,dadosBloco);
+function calcularRendimento(i){
+let feitas = parseInt(document.getElementById("feitas"+i).value) || 0;
+let erros = parseInt(document.getElementById("erros"+i).value) || 0;
 
 if(feitas>0 && erros<=feitas){
-let acertos=feitas-erros;
-let perc=((acertos/feitas)*100).toFixed(1);
-document.getElementById("rend"+i).innerHTML="RENDIMENTO: "+perc+"%";
+let acertos = feitas-erros;
+let perc = ((acertos/feitas)*100).toFixed(1);
+document.getElementById("rend"+i).innerHTML = "RENDIMENTO: "+perc+"%";
 }else{
-document.getElementById("rend"+i).innerHTML="RENDIMENTO: -";
+document.getElementById("rend"+i).innerHTML = "RENDIMENTO: -";
+}
 }
 
-atualizarResumo();
-}
+function calcSimulado(){
+let feitas = parseInt(document.getElementById("simFeitas").value) || 0;
+let erros = parseInt(document.getElementById("simErros").value) || 0;
 
-function atualizarResumo(){
-let totalFeitas=0;
-let totalErros=0;
-
-Object.values(dadosBloco).forEach(d=>{
-if(d.feitas){
-totalFeitas+=d.feitas;
-totalErros+=d.erros||0;
+if(feitas>0 && erros<=feitas){
+let acertos = feitas-erros;
+let perc = ((acertos/feitas)*100).toFixed(1);
+document.getElementById("simRend").innerHTML = "RENDIMENTO: "+perc+"%";
+}else{
+document.getElementById("simRend").innerHTML = "RENDIMENTO: -";
 }
-});
-
-let texto="TOTAL: "+totalFeitas+" questões | DESEMPENHO: -";
-
-if(totalFeitas>0){
-let perc=(( (totalFeitas-totalErros)/totalFeitas)*100).toFixed(1);
-texto="TOTAL: "+totalFeitas+" questões | DESEMPENHO: "+perc+"%";
-}
-
-let el=document.getElementById("resumoBloco");
-if(el)el.innerHTML=texto;
-}
-
-function restaurarCards(){
-Object.keys(dadosBloco).forEach(i=>{
-let d=dadosBloco[i];
-if(document.getElementById("feitas"+i)){
-document.getElementById("feitas"+i).value=d.feitas||"";
-document.getElementById("erros"+i).value=d.erros||"";
-if(d.finalizado){
-document.getElementById("card"+i).classList.add("finalizado");
-}
-atualizarCard(i);
-}
-});
 }
 
 function finalizar(i){
-let card=document.getElementById("card"+i);
-card.classList.toggle("finalizado");
-dadosBloco[i]=dadosBloco[i]||{};
-dadosBloco[i].finalizado=card.classList.contains("finalizado");
-salvarDados(chaveAtual,dadosBloco);
-}
 
-/* -------- SIMULADO -------- */
+let card = document.getElementById("card"+i);
+let botao = card.querySelector("button");
 
-function calcSimulado(){
-let feitas=parseInt(document.getElementById("simFeitas").value)||0;
-let erros=parseInt(document.getElementById("simErros").value)||0;
+if(card.classList.contains("finalizado")){
 
-dadosBloco.simulado={feitas,erros};
-salvarDados(chaveAtual,dadosBloco);
+card.classList.remove("finalizado");
+botao.innerText = "FINALIZAR";
 
-if(feitas>0 && erros<=feitas){
-let perc=(( (feitas-erros)/feitas)*100).toFixed(1);
-document.getElementById("simRend").innerHTML="RENDIMENTO: "+perc+"%";
 }else{
-document.getElementById("simRend").innerHTML="RENDIMENTO: -";
-}
+
+card.classList.add("finalizado");
+botao.innerText = "REABRIR";
+
 }
 
-function restaurarSimulado(){
-if(dadosBloco.simulado){
-document.getElementById("simFeitas").value=dadosBloco.simulado.feitas||"";
-document.getElementById("simErros").value=dadosBloco.simulado.erros||"";
-calcSimulado();
-}
 }
 
 </script>
+
 </body>
 </html>
