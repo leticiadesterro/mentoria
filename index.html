@@ -370,11 +370,12 @@ let semanaAula = ajustarSemanaCarnaval(dataAula);
 const diff = semanaAtual - semanaAula;
 
 if(diff===0 && !ehSemanaCarnaval(dataAtual))
-ativos.push({tema:a[1],fase:"FIX"});
-if(diff===1)ativos.push({tema:a[1],fase:"R7"});
-if(diff===2)ativos.push({tema:a[1],fase:"R15"});
-if(diff===4)ativos.push({tema:a[1],fase:"R30"});
-if(diff===12)ativos.push({tema:a[1],fase:"R90"});
+ativos.push({tema:a[1],fase:"FIX",id:a[1].replace(/\s+/g,'_')});
+
+if(diff===1)ativos.push({tema:a[1],fase:"R7",id:a[1].replace(/\s+/g,'_')});
+if(diff===2)ativos.push({tema:a[1],fase:"R15",id:a[1].replace(/\s+/g,'_')});
+if(diff===4)ativos.push({tema:a[1],fase:"R30",id:a[1].replace(/\s+/g,'_')});
+if(diff===12)ativos.push({tema:a[1],fase:"R90",id:a[1].replace(/\s+/g,'_')});
 });
 
 ativos.sort((a,b)=>{
@@ -410,7 +411,8 @@ const salvo = localStorage.getItem(chave);
 
 if(salvo){
 const estados = JSON.parse(salvo);
-const valor = parseInt(estados["feitas"+index]) || 0;
+const valor = parseInt(estados["feitas_"+x.id]) || 0;
+
 feitasTema += valor;
 }
 
@@ -510,7 +512,8 @@ QUESTÕES: ${x.min} (MIN) / ${x.sugerida} (SUGERIDA)<br><br>
 
 MÉDIA DIÁRIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
 
-<input type="number" placeholder="Quantas fiz" id="feitas${index}" oninput="calcularRendimento(${index})">
+<input type="number" placeholder="Quantas fiz" id="feitas_${x.id}" oninput="calcularRendimento(${index})">
+
 <input type="number" placeholder="Quantas errei" id="erros${index}" oninput="calcularRendimento(${index})">
 
 <div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
