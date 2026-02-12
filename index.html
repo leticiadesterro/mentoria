@@ -651,6 +651,52 @@ calcular();
 
 }
 
+/* =========================
+   MUDAR DATA COM SETAS E SWIPE
+========================= */
+
+function mudarData(dias){
+
+const input = document.getElementById("dataEscolhida");
+if(!input.value) return;
+
+const dataAtual = parseDateLocal(input.value);
+dataAtual.setDate(dataAtual.getDate() + dias);
+
+const ano = dataAtual.getFullYear();
+const mes = String(dataAtual.getMonth()+1).padStart(2,'0');
+const dia = String(dataAtual.getDate()).padStart(2,'0');
+
+input.value = `${ano}-${mes}-${dia}`;
+calcular();
+}
+
+/* SETAS DO TECLADO */
+document.addEventListener("keydown", function(e){
+if(e.key === "ArrowRight") mudarData(1);
+if(e.key === "ArrowLeft") mudarData(-1);
+});
+
+/* SWIPE NO CELULAR */
+let touchStartX = 0;
+
+document.addEventListener("touchstart", function(e){
+touchStartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener("touchend", function(e){
+let touchEndX = e.changedTouches[0].screenX;
+let diff = touchEndX - touchStartX;
+
+if(Math.abs(diff) > 50){ // sensibilidade
+if(diff < 0){
+mudarData(1);   // swipe esquerda → próximo dia
+}else{
+mudarData(-1);  // swipe direita → dia anterior
+}
+}
+});
+
 </script>
 
 </body>
