@@ -514,7 +514,14 @@ QUESTÕES: ${x.min} (MIN) / ${x.sugerida} (SUGERIDA)<br><br>
 
 MÉDIA DIÁRIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
 
-<input type="number" placeholder="Quantas fiz" id="feitas_${x.id}" oninput="calcularRendimento(${index})">
+<input type="number" placeholder="Quantas fiz" id="feitas_${x.id}" 
+oninput="calcularRendimento(${index})" 
+onchange="calcularRendimento(${index})">
+
+<input type="number" placeholder="Quantas errei" id="erros${index}" 
+oninput="calcularRendimento(${index})" 
+onchange="calcularRendimento(${index})">
+
 
 <input type="number" placeholder="Quantas errei" id="erros${index}" oninput="calcularRendimento(${index})">
 
