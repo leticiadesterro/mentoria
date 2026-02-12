@@ -49,6 +49,12 @@ color:#1B4332;
 opacity:0.95;
 }
 
+.card.assistida{
+background:#D1FAE5;
+color:#065F46;
+opacity:0.95;
+}
+
 .fix{border-left:8px solid #e74c3c;}
 .r7{border-left:8px solid #f39c12;}
 .r15{border-left:8px solid #3498db;}
@@ -121,11 +127,34 @@ d.setHours(0,0,0,0);
 return d;
 }
 
+function intervaloSemana(data){
+const inicio = inicioDaSemanaSabado(data);
+const fim = new Date(inicio);
+fim.setDate(fim.getDate() + 6);
+return {inicio, fim};
+}
+
+function idFimDeSemana(data){
+
+const sabado = inicioDaSemanaSabado(data);
+
+const ano = sabado.getFullYear();
+const mes = String(sabado.getMonth()+1).padStart(2,'0');
+const dia = String(sabado.getDate()).padStart(2,'0');
+
+return `${ano}-${mes}-${dia}`;
+}
 function numeroSemana(data){
 const inicioSemana = inicioDaSemanaSabado(data);
 const inicioBase = inicioDaSemanaSabado(DATA_INICIO);
 const diff = inicioSemana.getTime() - inicioBase.getTime();
 return Math.floor(diff/(1000*60*60*24*7)) + 1;
+}
+
+function ehSemanaCarnaval(data){
+const inicioCarnaval = new Date(2026,1,14); // sábado
+const fimCarnaval = new Date(2026,1,20); // sexta
+return data >= inicioCarnaval && data <= fimCarnaval;
 }
 
 const aulas = [
@@ -139,99 +168,182 @@ const aulas = [
 ["2026-01-31","SINDROMES RESPIRATORIAS NA INFANCIA (PARTE 1)"],
 ["2026-02-07","SINDROME DISPEPTICA E DOENCAS DO TGI SUPERIOR"],
 ["2026-02-07","SINDROMES RESPIRATORIAS NA INFANCIA (PARTE II)"],
-["2026-02-14","SINDROME DIARREICA"],
-["2026-02-14","HEMORRAGIA DIGESTIVA I - ABORDAGEM E CONDUTA"],
-["2026-02-21","SINDROME METABOLICA I - HAS E DISLIPIDEMIA"],
-["2026-02-21","HEMORRAGIA DIGESTIVA II - PROCTOLOGIA"],
-["2026-02-28","SUS - EVOLUCAO HISTORICA, DIRETRIZES, PROPOSTAS E FINANCIAMENTO"],
-["2026-02-28","SANGRAMENTO DA PRIMEIRA METADE DA GRAVIDEZ E DOENCAS HEMOLITICAS PERINATAIS"],
-["2026-03-07","SINDROME ALGICA I - DOR ABDOMINAL"],
-["2026-03-07","SANGRAMENTOS DA SEGUNDA METADE DA GRAVIDEZ"],
-["2026-03-14","SINDROME METABOLICA II - DIABETES"],
-["2026-03-14","IMUNIZACAO + INFECCAO DO TRATO URINARIO"],
-["2026-03-21","GRANDES SINDROMES ENDOCRINAS PARTE I (TIREOIDE)"],
-["2026-03-21","SINDROME DE OCLUSAO INTESTINAL (AGUDA X CRONICA) + HERNIAS"],
-["2026-03-28","GRANDES SINDROMES ENDOCRINAS PARTE II (SUPRARRENAL/CALCIO); HIPOFUNCAO ADRENAL (DOENCA DE ADDISON)"],
-["2026-03-28","ONCOLOGIA PARTE I - MAMA E OVARIO"],
-["2026-04-04","TERAPIA INTENSIVA"],
-["2026-04-04","MEDIDAS DE SAUDE COLETIVA"],
-["2026-04-11","GRANDES SINDROMES BACTERIANAS PARTE I - PNEUMONIA"],
-["2026-04-11","ONCOLOGIA PARTE II (ENDOMETRIO E COLO UTERINO)"],
-["2026-04-18","ESTUDOS EPIDEMIOLOGICOS"],
-["2026-04-18","DOENCAS CLINICAS NA GRAVIDEZ"],
-["2026-04-25","GRANDES SINDROMES BACTERIANAS PARTE II - ENDOCARDITE E ITU"],
-["2026-04-25","SINDROMES DE IMUNODEFICIENCIA"],
-["2026-05-02","SINDROMES FEBRIS"],
-["2026-05-09","TOSSE CRONICA"],
-["2026-05-09","NEONATOLOGIA I"],
-["2026-05-16","NEONATOLOGIA II"],
-["2026-05-16","ONCOLOGIA II - ESOFAGO, ESTOMAGO, COLORRETAL E FIGADO"],
-["2026-05-23","ONCOLOGIA II - PROSTATA, PULMAO E TIREOIDE"],
-["2026-05-23","CRESCIMENTO E SEUS DISTURBIOS"],
-["2026-05-23","CARENCIA DE MICRONUTRIENTES"],
-["2026-05-30","PUBERDADE E SEUS DISTURBIOS"],
-["2026-05-30","DESENVOLVIMENTO INFANTIL"],
-["2026-06-06","DISPNEIA (DOENCAS VASCULARES, OBSTRUTIVAS E RESTRITIVAS)"],
-["2026-06-06","SOFRIMENTO FETAL, AVALIACAO DE VITALIDADE FETAL, FORCEPS E PUERPERIO"],
-["2026-06-13","GERIATRIA"],
-["2026-06-13","EPILEPSIA"],
-["2026-06-20","VIGILANCIA DA SAUDE E ETICA MEDICA"],
-["2026-06-20","SINDROMES NEUROVASCULARES"],
-["2026-06-27","DECLARACAO DE OBITO E SAUDE DO TRABALHADOR"],
-["2026-06-27","FRAQUEZA MUSCULAR"],
-["2026-07-04","DIAGNOSTICO DE GRAVIDEZ, MODIFICACOES DO ORGANISMO MATERNO, PRE-NATAL E ACONSELHAMENTO GENETICO"],
-["2026-07-04","SINDROME ALGICA II - CEFALEIAS PRIMARIAS E SECUNDARIAS (ARTERITE DE CELULAS GIGANTES E MENINGITE)"],
-["2026-07-11","CICLO MENSTRUAL, DISTOPIA GENITAL E INCONTINENCIA URINARIA"],
-["2026-07-11","SINDROMES GLOMERULARES E DOENCA VASCULAR RENAL"],
-["2026-07-18","SINDROMES ALGICAS III - DOR LOMBAR"],
-["2026-07-18","SINDROME UREMICA"],
-["2026-07-25","TRAUMA E SUAS CONSEQUENCIAS I"],
-["2026-07-25","DISTURBIOS HIDROELETROLITICOS E ACIDO-BASE"],
-["2026-08-01","TRAUMA E SUAS CONSEQUENCIAS II"],
-["2026-08-01","ANEMIAS - PARTE I (CARENCIAIS)"],
-["2026-08-08","ANEMIAS - PARTE II (HEMOLITICAS)"],
-["2026-08-08","LEUCEMIAS E PANCITOPENIA"],
-["2026-08-15","AMENORREIA"],
-["2026-08-15","INFERTILIDADE E CLIMATERIO"],
-["2026-08-22","LINFONODOMEGALIA"],
-["2026-08-22","ANTICONCEPCAO, SANGRAMENTOS GINECOLOGICOS E ENDOMETRIOSE"],
-["2026-08-29","DISTURBIOS DE HEMOSTASIA"],
-["2026-08-29","TRANSTORNOS PSIQUIATRICOS I"],
-["2026-09-05","ARTRITES"],
-["2026-09-05","TRANSTORNOS PSIQUIATRICOS II"],
-["2026-09-12","COLAGENOSES"],
-["2026-09-12","VASCULITES"],
-["2026-09-19","SINDROMES EDEMIGENICAS"],
-["2026-09-19","O PARTO"],
-["2026-09-26","SINDROMES ALGICAS IV - DOR TORACICA PARTE I"],
-["2026-09-26","SINDROMES ALGICAS IV - DOR TORACICA PARTE II"],
-["2026-10-03","TAQUIARRITMIAS"],
-["2026-10-03","BRADIARRITMIAS"],
-["2026-10-10","VALVOPATIAS"],
-["2026-10-10","CARDIOPEDIATRIA"],
-["2026-10-17","ALEITAMENTO MATERNO + DIARREIA AGUDA"],
-["2026-10-17","PERIOPERATORIO I"],
-["2026-10-24","PERIOPERATORIO II"],
-["2026-10-24","INTOXICACAO E ACIDENTES POR ANIMAIS PEÇONHENTOS"],
-["2026-10-31","PSIQUIATRIA I"],
-["2026-10-31","PSIQUIATRIA II"],
-["2026-11-07","OTORRINOLARINGOLOGIA"],
-["2026-11-07","CIRURGIA DE CABECA E PESCOCO"],
-["2026-11-14","OFTALMOLOGIA"],
-["2026-11-14","ESPECIALIDADE CIRURGICA - PARTE I"],
-["2026-11-14","ESPECIALIDADE CIRURGICA - PARTE II"],
-["2026-11-14","DERMATOLOGIA I"],
-["2026-11-14","DERMATOLOGIA II"],
-["2026-11-14","ORTOPEDIA I"],
-["2026-11-14","ORTOPEDIA II"]
+["2026-02-21","SINDROME DIARREICA"],
+["2026-02-21","HEMORRAGIA DIGESTIVA I - ABORDAGEM E CONDUTA"],
+["2026-02-28","SINDROME METABOLICA I - HAS E DISLIPIDEMIA"],
+["2026-02-28","HEMORRAGIA DIGESTIVA II - PROCTOLOGIA"],
+["2026-03-07","SUS - EVOLUCAO HISTORICA, DIRETRIZES, PROPOSTAS E FINANCIAMENTO"],
+["2026-03-07","SANGRAMENTO DA PRIMEIRA METADE DA GRAVIDEZ E DOENCAS HEMOLITICAS PERINATAIS"],
+["2026-03-14","SINDROME ALGICA I - DOR ABDOMINAL"],
+["2026-03-14","SANGRAMENTOS DA SEGUNDA METADE DA GRAVIDEZ"],
+["2026-03-21","SINDROME METABOLICA II - DIABETES"],
+["2026-03-21","IMUNIZACAO + INFECCAO DO TRATO URINARIO"],
+["2026-03-28","GRANDES SINDROMES ENDOCRINAS PARTE I (TIREOIDE)"],
+["2026-03-28","SINDROME DE OCLUSAO INTESTINAL (AGUDA X CRONICA) + HERNIAS"],
+["2026-04-04","GRANDES SINDROMES ENDOCRINAS PARTE II (SUPRARRENAL/CALCIO); HIPOFUNCAO ADRENAL (DOENCA DE ADDISON)"],
+["2026-04-04","ONCOLOGIA PARTE I - MAMA E OVARIO"],
+["2026-04-11","TERAPIA INTENSIVA"],
+["2026-04-11","MEDIDAS DE SAUDE COLETIVA"],
+["2026-04-18","GRANDES SINDROMES BACTERIANAS PARTE I - PNEUMONIA"],
+["2026-04-18","ONCOLOGIA PARTE II (ENDOMETRIO E COLO UTERINO)"],
+["2026-04-25","ESTUDOS EPIDEMIOLOGICOS"],
+["2026-04-25","DOENCAS CLINICAS NA GRAVIDEZ"],
+["2026-05-02","GRANDES SINDROMES BACTERIANAS PARTE II - ENDOCARDITE E ITU"],
+["2026-05-02","SINDROMES DE IMUNODEFICIENCIA"],
+["2026-05-09","SINDROMES FEBRIS"],
+["2026-05-16","TOSSE CRONICA"],
+["2026-05-16","NEONATOLOGIA I"],
+["2026-05-23","NEONATOLOGIA II"],
+["2026-05-23","ONCOLOGIA II - ESOFAGO, ESTOMAGO, COLORRETAL E FIGADO"],
+["2026-05-30","ONCOLOGIA II - PROSTATA, PULMAO E TIREOIDE"],
+["2026-05-30","CRESCIMENTO E SEUS DISTURBIOS"],
+["2026-05-30","CARENCIA DE MICRONUTRIENTES"],
+["2026-06-06","PUBERDADE E SEUS DISTURBIOS"],
+["2026-06-06","DESENVOLVIMENTO INFANTIL"],
+["2026-06-13","DISPNEIA (DOENCAS VASCULARES, OBSTRUTIVAS E RESTRITIVAS)"],
+["2026-06-13","SOFRIMENTO FETAL, AVALIACAO DE VITALIDADE FETAL, FORCEPS E PUERPERIO"],
+["2026-06-20","GERIATRIA"],
+["2026-06-20","EPILEPSIA"],
+["2026-06-27","VIGILANCIA DA SAUDE E ETICA MEDICA"],
+["2026-06-27","SINDROMES NEUROVASCULARES"],
+["2026-07-04","DECLARACAO DE OBITO E SAUDE DO TRABALHADOR"],
+["2026-07-04","FRAQUEZA MUSCULAR"],
+["2026-07-11","DIAGNOSTICO DE GRAVIDEZ, MODIFICACOES DO ORGANISMO MATERNO, PRE-NATAL E ACONSELHAMENTO GENETICO"],
+["2026-07-11","SINDROME ALGICA II - CEFALEIAS PRIMARIAS E SECUNDARIAS (ARTERITE DE CELULAS GIGANTES E MENINGITE)"],
+["2026-07-18","CICLO MENSTRUAL, DISTOPIA GENITAL E INCONTINENCIA URINARIA"],
+["2026-07-18","SINDROMES GLOMERULARES E DOENCA VASCULAR RENAL"],
+["2026-07-25","SINDROMES ALGICAS III - DOR LOMBAR"],
+["2026-07-25","SINDROME UREMICA"],
+["2026-08-01","TRAUMA E SUAS CONSEQUENCIAS I"],
+["2026-08-01","DISTURBIOS HIDROELETROLITICOS E ACIDO-BASE"],
+["2026-08-08","TRAUMA E SUAS CONSEQUENCIAS II"],
+["2026-08-08","ANEMIAS - PARTE I (CARENCIAIS)"],
+["2026-08-15","ANEMIAS - PARTE II (HEMOLITICAS)"],
+["2026-08-15","LEUCEMIAS E PANCITOPENIA"],
+["2026-08-22","AMENORREIA"],
+["2026-08-22","INFERTILIDADE E CLIMATERIO"],
+["2026-08-29","LINFONODOMEGALIA"],
+["2026-08-29","ANTICONCEPCAO, SANGRAMENTOS GINECOLOGICOS E ENDOMETRIOSE"],
+["2026-09-05","DISTURBIOS DE HEMOSTASIA"],
+["2026-09-05","TRANSTORNOS PSIQUIATRICOS I"],
+["2026-09-12","ARTRITES"],
+["2026-09-12","TRANSTORNOS PSIQUIATRICOS II"],
+["2026-09-19","COLAGENOSES"],
+["2026-09-19","VASCULITES"],
+["2026-09-26","SINDROMES EDEMIGENICAS"],
+["2026-09-26","O PARTO"],
+["2026-10-03","SINDROMES ALGICAS IV - DOR TORACICA PARTE I"],
+["2026-10-03","SINDROMES ALGICAS IV - DOR TORACICA PARTE II"],
+["2026-10-10","TAQUIARRITMIAS"],
+["2026-10-10","BRADIARRITMIAS"],
+["2026-10-17","VALVOPATIAS"],
+["2026-10-17","CARDIOPEDIATRIA"],
+["2026-10-24","ALEITAMENTO MATERNO + DIARREIA AGUDA"],
+["2026-10-24","PERIOPERATORIO I"],
+["2026-10-31","PERIOPERATORIO II"],
+["2026-10-31","INTOXICACAO E ACIDENTES POR ANIMAIS PEÇONHENTOS"],
+["2026-11-07","PSIQUIATRIA I"],
+["2026-11-07","PSIQUIATRIA II"],
+["2026-11-14","OTORRINOLARINGOLOGIA"],
+["2026-11-14","CIRURGIA DE CABECA E PESCOCO"],
+["2026-11-21","OFTALMOLOGIA"],
+["2026-11-21","ESPECIALIDADE CIRURGICA - PARTE I"],
+["2026-11-21","ESPECIALIDADE CIRURGICA - PARTE II"],
+["2026-11-21","DERMATOLOGIA I"],
+["2026-11-21","DERMATOLOGIA II"],
+["2026-11-21","ORTOPEDIA I"],
+["2026-11-21","ORTOPEDIA II"]
 ];
 
 function ajustarSemanaCarnaval(data){
-if(data >= new Date(2026,1,16)){
-return numeroSemana(data)-1;
+
+const inicioSemana = inicioDaSemanaSabado(data);
+const sabadoCarnaval = new Date(2026,1,14); // sábado correto
+
+// apenas semanas QUE COMEÇAM depois do carnaval voltam uma casa
+if(inicioSemana > sabadoCarnaval){
+return numeroSemana(data) - 1;
 }
+
 return numeroSemana(data);
 }
+
+/* =========================
+   SALVAMENTO AUTOMÁTICO
+========================= */
+
+function gerarChaveDia(data){
+
+const ano = data.getFullYear();
+const mes = String(data.getMonth()+1).padStart(2,'0');
+const dia = String(data.getDate()).padStart(2,'0');
+
+return `planner_${ano}-${mes}-${dia}`;
+}
+
+function salvarDadosDia(data){
+    const chave = gerarChaveDia(data);
+
+    const inputs = document.querySelectorAll("input");
+    const estados = {};
+
+    inputs.forEach(input=>{
+        estados[input.id] = input.value;
+    });
+
+    localStorage.setItem(chave, JSON.stringify(estados));
+}
+
+function carregarDadosDia(data){
+    const chave = gerarChaveDia(data);
+    const salvo = localStorage.getItem(chave);
+
+    if(!salvo) return;
+
+    const estados = JSON.parse(salvo);
+
+    Object.keys(estados).forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){
+            el.value = estados[id];
+        }
+    });
+}
+
+function totalFeitasSemana(dataAtual){
+
+const {inicio, fim} = intervaloSemana(dataAtual);
+let totalSemana = 0;
+let totalDia = 0;
+
+let dataLoop = new Date(inicio);
+
+while(dataLoop <= fim){
+
+const chave = gerarChaveDia(dataLoop);
+const salvo = localStorage.getItem(chave);
+
+if(salvo){
+const estados = JSON.parse(salvo);
+
+Object.keys(estados).forEach(id=>{
+if(id.startsWith("feitas")){
+const valor = parseInt(estados[id]) || 0;
+totalSemana += valor;
+
+if(dataLoop.toDateString() === dataAtual.toDateString()){
+totalDia += valor;
+}
+}
+});
+}
+
+dataLoop.setDate(dataLoop.getDate()+1);
+}
+
+return {totalSemana, totalDia};
+}
+
 
 function calcular(){
 
@@ -241,16 +353,24 @@ if(!dataInput){ alert("Escolha uma data."); return; }
 const dataAtual = parseDateLocal(dataInput);
 const diaSemana = dataAtual.getDay();
 
+const sabadoSemana = inicioDaSemanaSabado(dataAtual);
+const sabadoStr = idFimDeSemana(dataAtual);
+
+
 const semanaAtual = ajustarSemanaCarnaval(dataAtual);
 let ativos = [];
 
 aulas.forEach(a=>{
+
+
 const dataAula = parseDateLocal(a[0]);
 let semanaAula = ajustarSemanaCarnaval(dataAula);
 
+
 const diff = semanaAtual - semanaAula;
 
-if(diff===0)ativos.push({tema:a[1],fase:"FIX"});
+if(diff===0 && !ehSemanaCarnaval(dataAtual))
+ativos.push({tema:a[1],fase:"FIX"});
 if(diff===1)ativos.push({tema:a[1],fase:"R7"});
 if(diff===2)ativos.push({tema:a[1],fase:"R15"});
 if(diff===4)ativos.push({tema:a[1],fase:"R30"});
@@ -273,42 +393,81 @@ ativos.forEach(x=>{
 x.sugerida = Math.round((x.min / totalMin) * META_SEMANAL);
 });
 
-let soma = ativos.reduce((t,x)=>t+x.sugerida,0);
-let diff = META_SEMANAL - soma;
-let i=0;
+// AJUSTAR METAS PELO QUE JÁ FOI FEITO (somente dias úteis)
+if(diaSemana !== 6 && diaSemana !== 0){
 
-while(diff!==0){
-ativos[i%ativos.length].sugerida += diff>0?1:-1;
-diff += diff>0?-1:1;
-i++;
+ativos.forEach((x,index)=>{
+
+let feitasTema = 0;
+
+const {inicio, fim} = intervaloSemana(dataAtual);
+let dataLoop = new Date(inicio);
+
+while(dataLoop <= fim){
+
+const chave = gerarChaveDia(dataLoop);
+const salvo = localStorage.getItem(chave);
+
+if(salvo){
+const estados = JSON.parse(salvo);
+const valor = parseInt(estados["feitas"+index]) || 0;
+feitasTema += valor;
+}
+
+dataLoop.setDate(dataLoop.getDate()+1);
+}
+
+x.min = Math.max(0, x.min - feitasTema);
+x.sugerida = Math.max(0, x.sugerida - feitasTema);
+
+});
+
 }
 
 document.getElementById("metaResumo").innerHTML =
 `Meta semanal recomendada: <strong>${totalMin}</strong> questões (mínimo necessário)
 • Meta ideal: <strong>${META_SEMANAL}</strong> questões`;
 
-let html=`<div class="total">SEMANA ${semanaAtual}</div>`;
+let tituloSemana = ehSemanaCarnaval(dataAtual)
+? "CARNAVAL"
+: semanaAtual;
+
+let html=`<div class="total">SEMANA ${tituloSemana}</div>`;
+
+// CONTADOR (apenas dias úteis)
+if(diaSemana !== 6 && diaSemana !== 0){
+
+const totais = totalFeitasSemana(dataAtual);
+
+html += `
+<div class="card" style="background:#E0F2FE; font-weight:bold;">
+QUESTÕES HOJE: ${totais.totalDia}<br>
+QUESTÕES NA SEMANA: ${totais.totalSemana}
+</div>
+`;
+}
+
 
 /* FIM DE SEMANA */
 
+const aulasSabado = aulas.filter(a => a[0] === sabadoStr);
+
 if(diaSemana===6 || diaSemana===0){
 
-const sabado = inicioDaSemanaSabado(dataAtual);
-const sabadoStr = sabado.toISOString().split("T")[0];
+// NÃO mostrar aulas se for carnaval
+if(!ehSemanaCarnaval(dataAtual)){
 
-if(sabadoStr === CARNAVAL){
-html+=`<div class="card"><strong>SEM AULA — CARNAVAL</strong></div>`;
-}else{
-
-const aulasSabado = aulas.filter(a=>a[0]===sabadoStr);
-
-aulasSabado.forEach(a=>{
+aulasSabado.forEach((a,index)=>{
 html+=`
-<div class="card">
-<strong>AULA — ${a[1]}</strong>
+<div class="card" id="aula${index}">
+<strong>AULA — ${a[1]}</strong><br><br>
+<button onclick="toggleAula(${index})">MARCAR COMO ASSISTIDA</button>
 </div>`;
 });
+
 }
+
+
 
 html+=`
 <div class="card">
@@ -322,10 +481,23 @@ html+=`
 `;
 
 document.getElementById("saida").innerHTML=html;
+
+carregarDadosDia(dataAtual);
+
+document.querySelectorAll("#saida input").forEach(input=>{
+    input.addEventListener("input", ()=>{
+        salvarDadosDia(dataAtual);
+        calcular(); // força atualização automática da tela
+    });
+});
+
+
+
 return;
 }
 
 /* SEMANA NORMAL */
+
 
 ativos.forEach((x,index)=>{
 html+=`
@@ -344,12 +516,43 @@ MÉDIA DIÁRIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
 <div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
 
 <button onclick="finalizar(${index})">FINALIZAR</button>
+<button onclick="atualizarDia()">ATUALIZAR</button>
+
 </div>
 `;
 });
 
-document.getElementById("saida").innerHTML=html;
+// EXIBIR AULAS DO SÁBADO DURANTE A SEMANA (modo informativo)
+if(diaSemana !== 6 && diaSemana !== 0 && !ehSemanaCarnaval(dataAtual)){
+
+if(aulasSabado.length > 0){
+
+html += `
+<div class="card" style="background:#FEF9C3;">
+<strong>AULAS DESTE SÁBADO:</strong><br><br>
+`;
+
+aulasSabado.forEach(a=>{
+html += `• ${a[1]}<br>`;
+});
+
+html += `</div>`;
 }
+
+}
+
+document.getElementById("saida").innerHTML=html;
+
+carregarDadosDia(dataAtual);
+
+document.querySelectorAll("#saida input").forEach(input=>{
+    input.addEventListener("input", ()=>{
+        salvarDadosDia(dataAtual);
+    });
+});
+
+}
+
 
 function calcularRendimento(i){
 let feitas = parseInt(document.getElementById("feitas"+i).value) || 0;
@@ -393,6 +596,55 @@ card.classList.add("finalizado");
 botao.innerText = "REABRIR";
 
 }
+
+}
+
+function toggleAula(i){
+
+let card = document.getElementById("aula"+i);
+let botao = card.querySelector("button");
+
+if(card.classList.contains("assistida")){
+
+card.classList.remove("assistida");
+botao.innerText = "MARCAR COMO ASSISTIDA";
+
+}else{
+
+card.classList.add("assistida");
+botao.innerText = "REABRIR AULA";
+
+}
+
+}
+
+(function(){
+
+const hoje = new Date();
+const ano = hoje.getFullYear();
+const mes = String(hoje.getMonth()+1).padStart(2,'0');
+const dia = String(hoje.getDate()).padStart(2,'0');
+
+const hojeFormatado = `${ano}-${mes}-${dia}`;
+
+const inputData = document.getElementById("dataEscolhida");
+
+if(inputData && !inputData.value){
+inputData.value = hojeFormatado;
+calcular();
+}
+
+})();
+
+function atualizarDia(){
+
+const dataInput = document.getElementById("dataEscolhida").value;
+if(!dataInput) return;
+
+const dataAtual = parseDateLocal(dataInput);
+
+salvarDadosDia(dataAtual);
+calcular();
 
 }
 
