@@ -555,6 +555,16 @@ document.getElementById("saida").innerHTML=html;
 
 carregarDadosDia(dataAtual);
 
+if(document.getElementById("simFeitas")){
+    calcSimulado();
+}
+
+
+ativos.forEach((x,index)=>{
+    calcularRendimento(index);
+});
+
+
 document.querySelectorAll("#saida input").forEach(input=>{
     input.addEventListener("input", ()=>{
         salvarDadosDia(dataAtual);
