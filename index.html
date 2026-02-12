@@ -82,6 +82,8 @@ font-weight:bold;
 <label>Escolha a data atual:</label>
 <input type="date" id="dataEscolhida">
 <button id="btnCalcular">CALCULAR</button>
+<input type="number" id="metaInput" placeholder="Alterar meta semanal (opcional)">
+<button onclick="alterarMeta()">SALVAR META</button>
 
 <div id="saida"></div>
 
@@ -100,7 +102,7 @@ box-shadow:0 4px 10px rgba(0,0,0,0.05);
 
 document.getElementById("btnCalcular").addEventListener("click", calcular);
 
-const META_SEMANAL = 350;
+let META_SEMANAL = 350;
 
 const MINIMO = {
 FIX:60,
@@ -518,8 +520,8 @@ MÉDIA DIÁRIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
 
 <div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
 
-<button onclick="finalizar(${index})">FINALIZAR</button>
 <button onclick="atualizarDia()">ATUALIZAR</button>
+<button onclick="finalizar(${index})">FINALIZAR</button>
 
 </div>
 `;
@@ -558,17 +560,25 @@ document.querySelectorAll("#saida input").forEach(input=>{
 
 
 function calcularRendimento(i){
-let feitas = parseInt(document.getElementById("feitas"+i).value) || 0;
-let erros = parseInt(document.getElementById("erros"+i).value) || 0;
 
-if(feitas>0 && erros<=feitas){
-let acertos = feitas-erros;
-let perc = ((acertos/feitas)*100).toFixed(1);
-document.getElementById("rend"+i).innerHTML = "RENDIMENTO: "+perc+"%";
+const card = document.getElementById("card"+i);
+
+const feitasInput = card.querySelector('input[id^="feitas_"]');
+const errosInput = document.getElementById("erros"+i);
+
+let feitas = parseInt(feitasInput.value) || 0;
+let erros = parseInt(errosInput.value) || 0;
+
+if(feitas > 0 && erros <= feitas){
+    let acertos = feitas - erros;
+    let perc = ((acertos / feitas) * 100).toFixed(1);
+    document.getElementById("rend"+i).innerHTML = "RENDIMENTO: " + perc + "%";
 }else{
-document.getElementById("rend"+i).innerHTML = "RENDIMENTO: -";
+    document.getElementById("rend"+i).innerHTML = "RENDIMENTO: -";
 }
+
 }
+
 
 function calcSimulado(){
 let feitas = parseInt(document.getElementById("simFeitas").value) || 0;
@@ -586,7 +596,7 @@ document.getElementById("simRend").innerHTML = "RENDIMENTO: -";
 function finalizar(i){
 
 let card = document.getElementById("card"+i);
-let botao = card.querySelector("button");
+let botao = card.querySelectorAll("button")[1]; // pega o SEGUNDO botão
 
 if(card.classList.contains("finalizado")){
 
@@ -601,6 +611,7 @@ botao.innerText = "REABRIR";
 }
 
 }
+
 
 function toggleAula(i){
 
@@ -622,6 +633,11 @@ botao.innerText = "REABRIR AULA";
 }
 
 (function(){
+
+const metaSalva = localStorage.getItem("meta_semanal");
+if(metaSalva){
+    META_SEMANAL = parseInt(metaSalva);
+}
 
 const hoje = new Date();
 const ano = hoje.getFullYear();
@@ -672,6 +688,22 @@ calcular();
 window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function alterarMeta(){
+
+const valor = parseInt(document.getElementById("metaInput").value);
+
+if(valor && valor > 0){
+    META_SEMANAL = valor;
+    localStorage.setItem("meta_semanal", valor);
+}else{
+    META_SEMANAL = 350;
+    localStorage.setItem("meta_semanal", 350);
+}
+
+calcular();
+}
+
+
 /* SETAS DO TECLADO */
 document.addEventListener("keydown", function(e){
 if(e.key === "ArrowRight") mudarData(1);
@@ -682,4 +714,3 @@ if(e.key === "ArrowLeft") mudarData(-1);
 
 </body>
 </html>
-
