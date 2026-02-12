@@ -520,8 +520,8 @@ MÉDIA DIÁRIA (5 DIAS): ${Math.ceil(x.min/5)} / ${Math.ceil(x.sugerida/5)}
 
 <div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
 
-<button onclick="atualizarDia()">ATUALIZAR</button>
-<button onclick="finalizar(${index})">FINALIZAR</button>
+<button onclick="atualizarDia()">SALVAR DADOS</button>
+<button onclick="finalizar(${index})">CONCLUIR TAREFA</button>
 
 </div>
 `;
@@ -601,12 +601,13 @@ let botao = card.querySelectorAll("button")[1]; // pega o SEGUNDO botão
 if(card.classList.contains("finalizado")){
 
 card.classList.remove("finalizado");
-botao.innerText = "FINALIZAR";
+botao.innerText = "CONCLUIR TAREFA";
 
 }else{
 
 card.classList.add("finalizado");
-botao.innerText = "REABRIR";
+botao.innerText = "REABRIR TAREFA";
+
 
 }
 
