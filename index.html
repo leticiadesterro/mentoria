@@ -669,6 +669,7 @@ const dia = String(dataAtual.getDate()).padStart(2,'0');
 
 input.value = `${ano}-${mes}-${dia}`;
 calcular();
+window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 /* SETAS DO TECLADO */
