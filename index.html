@@ -284,10 +284,13 @@ return `planner_${ano}-${mes}-${dia}`;
 }
 
 function salvarDadosDia(data){
+
     const chave = gerarChaveDia(data);
 
-    const inputs = document.querySelectorAll("input");
-    const estados = {};
+    const salvo = localStorage.getItem(chave);
+    const estados = salvo ? JSON.parse(salvo) : {};
+
+    const inputs = document.querySelectorAll("#saida input");
 
     inputs.forEach(input=>{
         estados[input.id] = input.value;
@@ -295,6 +298,7 @@ function salvarDadosDia(data){
 
     localStorage.setItem(chave, JSON.stringify(estados));
 }
+
 
 function carregarDadosDia(data){
     const chave = gerarChaveDia(data);
