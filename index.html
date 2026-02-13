@@ -491,7 +491,6 @@ carregarDadosDia(dataAtual);
 document.querySelectorAll("#saida input").forEach(input=>{
     input.addEventListener("input", ()=>{
         salvarDadosDia(dataAtual);
-        calcular(); // força atualização automática da tela
     });
 });
 
@@ -555,6 +554,26 @@ document.getElementById("saida").innerHTML=html;
 
 carregarDadosDia(dataAtual);
 
+const chave = gerarChaveDia(dataAtual);
+const salvo = localStorage.getItem(chave);
+
+if(salvo){
+    const estados = JSON.parse(salvo);
+
+    Object.keys(estados).forEach(key=>{
+        if(key.startsWith("concluido_") && estados[key] === true){
+            const index = key.replace("concluido_","");
+            const card = document.getElementById("card"+index);
+            if(card){
+                card.classList.add("finalizado");
+                const botao = card.querySelectorAll("button")[1];
+                if(botao) botao.innerText = "REABRIR TAREFA";
+            }
+        }
+    });
+}
+
+
 if(document.getElementById("simFeitas")){
     calcSimulado();
 }
@@ -611,22 +630,36 @@ document.getElementById("simRend").innerHTML = "RENDIMENTO: -";
 function finalizar(i){
 
 let card = document.getElementById("card"+i);
-let botao = card.querySelectorAll("button")[1]; // pega o SEGUNDO botão
+let botao = card.querySelectorAll("button")[1];
+
+const dataInput = document.getElementById("dataEscolhida").value;
+if(!dataInput) return;
+
+const dataAtual = parseDateLocal(dataInput);
+const chave = gerarChaveDia(dataAtual);
+
+let salvo = localStorage.getItem(chave);
+let estados = salvo ? JSON.parse(salvo) : {};
+
+const idTarefa = "concluido_"+i;
 
 if(card.classList.contains("finalizado")){
 
 card.classList.remove("finalizado");
 botao.innerText = "CONCLUIR TAREFA";
+estados[idTarefa] = false;
 
 }else{
 
 card.classList.add("finalizado");
 botao.innerText = "REABRIR TAREFA";
-
-
-}
+estados[idTarefa] = true;
 
 }
+
+localStorage.setItem(chave, JSON.stringify(estados));
+}
+
 
 
 function toggleAula(i){
@@ -701,7 +734,10 @@ const dia = String(dataAtual.getDate()).padStart(2,'0');
 
 input.value = `${ano}-${mes}-${dia}`;
 calcular();
-window.scrollTo({ top: 0, behavior: "smooth" });
+document.documentElement.style.scrollBehavior = "smooth";
+document.documentElement.scrollTop = 0;
+document.body.scrollTop = 0;
+
 }
 
 function alterarMeta(){
