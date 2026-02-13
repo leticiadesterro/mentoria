@@ -7,6 +7,15 @@
 
 <style>
 body{
+html, body{
+height:100%;
+overflow-x:hidden;
+}
+
+body{
+position:relative;
+}
+
 font-family:Arial, sans-serif;
 margin:20px;
 background:#f4f6f9;
@@ -16,7 +25,7 @@ h1{
 text-align:center;
 }
 
-input,button{
+input{
 padding:14px;
 font-size:18px;
 margin:8px 0;
@@ -25,6 +34,21 @@ border-radius:8px;
 border:1px solid #ccc;
 box-sizing:border-box;
 }
+
+button{
+padding:14px;
+font-size:18px;
+margin:8px 0;
+border-radius:8px;
+border:none;
+background:#4F46E5;
+color:white;
+font-weight:bold;
+cursor:pointer;
+display:block;
+width:100%;
+}
+
 
 button{
 background:#4F46E5;
@@ -72,6 +96,25 @@ text-align:center;
 margin-top:10px;
 font-weight:bold;
 }
+/* CORREÇÃO DEFINITIVA DO KICK NO TABLET */
+
+let scrollTravado = 0;
+
+document.addEventListener("focusin", function(e){
+if(e.target.tagName === "INPUT"){
+scrollTravado = window.scrollY;
+document.body.style.position = "fixed";
+document.body.style.top = "-" + scrollTravado + "px";
+document.body.style.width = "100%";
+}
+});
+
+document.addEventListener("focusout", function(){
+document.body.style.position = "";
+document.body.style.top = "";
+window.scrollTo(0, scrollTravado);
+});
+
 </style>
 </head>
 
