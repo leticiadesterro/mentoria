@@ -6,7 +6,6 @@
 <title>MENTORIA 2026</title>
 
 <style>
-body{
 html, body{
 height:100%;
 overflow-x:hidden;
@@ -14,8 +13,6 @@ overflow-x:hidden;
 
 body{
 position:relative;
-}
-
 font-family:Arial, sans-serif;
 margin:20px;
 background:#f4f6f9;
@@ -47,15 +44,6 @@ font-weight:bold;
 cursor:pointer;
 display:block;
 width:100%;
-}
-
-
-button{
-background:#4F46E5;
-color:white;
-border:none;
-font-weight:bold;
-cursor:pointer;
 }
 
 .card{
@@ -96,25 +84,6 @@ text-align:center;
 margin-top:10px;
 font-weight:bold;
 }
-/* CORREÇÃO DEFINITIVA DO KICK NO TABLET */
-
-let scrollTravado = 0;
-
-document.addEventListener("focusin", function(e){
-if(e.target.tagName === "INPUT"){
-scrollTravado = window.scrollY;
-document.body.style.position = "fixed";
-document.body.style.top = "-" + scrollTravado + "px";
-document.body.style.width = "100%";
-}
-});
-
-document.addEventListener("focusout", function(){
-document.body.style.position = "";
-document.body.style.top = "";
-window.scrollTo(0, scrollTravado);
-});
-
 </style>
 </head>
 
@@ -142,6 +111,23 @@ box-shadow:0 4px 10px rgba(0,0,0,0.05);
 "></div>
 
 <script>
+
+let scrollTravado = 0;
+
+document.addEventListener("focusin", function(e){
+if(e.target.tagName === "INPUT"){
+scrollTravado = window.scrollY;
+document.body.style.position = "fixed";
+document.body.style.top = "-" + scrollTravado + "px";
+document.body.style.width = "100%";
+}
+});
+
+document.addEventListener("focusout", function(){
+document.body.style.position = "";
+document.body.style.top = "";
+window.scrollTo(0, scrollTravado);
+});
 
 document.getElementById("btnCalcular").addEventListener("click", calcular);
 
@@ -189,6 +175,7 @@ const dia = String(sabado.getDate()).padStart(2,'0');
 
 return `${ano}-${mes}-${dia}`;
 }
+
 function numeroSemana(data){
 const inicioSemana = inicioDaSemanaSabado(data);
 const inicioBase = inicioDaSemanaSabado(DATA_INICIO);
@@ -197,8 +184,8 @@ return Math.floor(diff/(1000*60*60*24*7)) + 1;
 }
 
 function ehSemanaCarnaval(data){
-const inicioCarnaval = new Date(2026,1,14); // sábado
-const fimCarnaval = new Date(2026,1,20); // sexta
+const inicioCarnaval = new Date(2026,1,14);
+const fimCarnaval = new Date(2026,1,20);
 return data >= inicioCarnaval && data <= fimCarnaval;
 }
 
@@ -307,7 +294,7 @@ const aulas = [
 
 ["2026-08-08","ANEMIAS - PARTE I (CARENCIAIS)"],
 ["2026-08-08","ANEMIAS - PARTE II (HEMOLITICAS)"],
-["2026-08-08","EXTRA — DISTÚRBIOS DE HEMOSTASIA”],
+["2026-08-08","EXTRA — DISTÚRBIOS DE HEMOSTASIA"],
 
 ["2026-08-15","LEUCEMIAS E PANCITOPENIA"],
 ["2026-08-15","AMENORREIA + DEVER DE CASA: INFERTILIDADE E CLIMATERIO"],
@@ -365,19 +352,14 @@ const aulas = [
 function ajustarSemanaCarnaval(data){
 
 const inicioSemana = inicioDaSemanaSabado(data);
-const sabadoCarnaval = new Date(2026,1,14); // sábado correto
+const sabadoCarnaval = new Date(2026,1,14);
 
-// apenas semanas QUE COMEÇAM depois do carnaval voltam uma casa
 if(inicioSemana > sabadoCarnaval){
 return numeroSemana(data) - 1;
 }
 
 return numeroSemana(data);
 }
-
-/* =========================
-   SALVAMENTO AUTOMÁTICO
-========================= */
 
 function gerarChaveDia(data){
 
@@ -390,35 +372,34 @@ return `planner_${ano}-${mes}-${dia}`;
 
 function salvarDadosDia(data){
 
-    const chave = gerarChaveDia(data);
+const chave = gerarChaveDia(data);
 
-    const salvo = localStorage.getItem(chave);
-    const estados = salvo ? JSON.parse(salvo) : {};
+const salvo = localStorage.getItem(chave);
+const estados = salvo ? JSON.parse(salvo) : {};
 
-    const inputs = document.querySelectorAll("#saida input");
+const inputs = document.querySelectorAll("#saida input");
 
-    inputs.forEach(input=>{
-        estados[input.id] = input.value;
-    });
+inputs.forEach(input=>{
+estados[input.id] = input.value;
+});
 
-    localStorage.setItem(chave, JSON.stringify(estados));
+localStorage.setItem(chave, JSON.stringify(estados));
 }
 
-
 function carregarDadosDia(data){
-    const chave = gerarChaveDia(data);
-    const salvo = localStorage.getItem(chave);
+const chave = gerarChaveDia(data);
+const salvo = localStorage.getItem(chave);
 
-    if(!salvo) return;
+if(!salvo) return;
 
-    const estados = JSON.parse(salvo);
+const estados = JSON.parse(salvo);
 
-    Object.keys(estados).forEach(id=>{
-        const el = document.getElementById(id);
-        if(el){
-            el.value = estados[id];
-        }
-    });
+Object.keys(estados).forEach(id=>{
+const el = document.getElementById(id);
+if(el){
+el.value = estados[id];
+}
+});
 }
 
 function totalFeitasSemana(dataAtual){
@@ -455,7 +436,6 @@ dataLoop.setDate(dataLoop.getDate()+1);
 return {totalSemana, totalDia};
 }
 
-
 function calcular(){
 
 const dataInput = document.getElementById("dataEscolhida").value;
@@ -464,19 +444,15 @@ if(!dataInput){ alert("Escolha uma data."); return; }
 const dataAtual = parseDateLocal(dataInput);
 const diaSemana = dataAtual.getDay();
 
-const sabadoSemana = inicioDaSemanaSabado(dataAtual);
 const sabadoStr = idFimDeSemana(dataAtual);
-
 
 const semanaAtual = ajustarSemanaCarnaval(dataAtual);
 let ativos = [];
 
 aulas.forEach(a=>{
 
-
 const dataAula = parseDateLocal(a[0]);
 let semanaAula = ajustarSemanaCarnaval(dataAula);
-
 
 const diff = semanaAtual - semanaAula;
 
@@ -505,7 +481,6 @@ ativos.forEach(x=>{
 x.sugerida = Math.round((x.min / totalMin) * META_SEMANAL);
 });
 
-// AJUSTAR METAS PELO QUE JÁ FOI FEITO (somente dias úteis)
 if(diaSemana !== 6 && diaSemana !== 0){
 
 ativos.forEach((x,index)=>{
@@ -547,7 +522,6 @@ let tituloSemana = ehSemanaCarnaval(dataAtual)
 
 let html=`<div class="total">SEMANA ${tituloSemana}</div>`;
 
-// CONTADOR (apenas dias úteis)
 if(diaSemana !== 6 && diaSemana !== 0){
 
 const totais = totalFeitasSemana(dataAtual);
@@ -560,14 +534,10 @@ QUESTÕES NA SEMANA: ${totais.totalSemana}
 `;
 }
 
-
-/* FIM DE SEMANA */
-
 const aulasSabado = aulas.filter(a => a[0] === sabadoStr);
 
 if(diaSemana===6 || diaSemana===0){
 
-// NÃO mostrar aulas se for carnaval
 if(!ehSemanaCarnaval(dataAtual)){
 
 aulasSabado.forEach((a,index)=>{
@@ -579,8 +549,6 @@ html+=`
 });
 
 }
-
-
 
 html+=`
 <div class="card">
@@ -598,18 +566,13 @@ document.getElementById("saida").innerHTML=html;
 carregarDadosDia(dataAtual);
 
 document.querySelectorAll("#saida input").forEach(input=>{
-    input.addEventListener("input", ()=>{
-        salvarDadosDia(dataAtual);
-    });
+input.addEventListener("input", ()=>{
+salvarDadosDia(dataAtual);
 });
-
-
+});
 
 return;
 }
-
-/* SEMANA NORMAL */
-
 
 ativos.forEach((x,index)=>{
 html+=`
@@ -630,7 +593,6 @@ onchange="calcularRendimento(${index})">
 oninput="calcularRendimento(${index})" 
 onchange="calcularRendimento(${index})">
 
-
 <div class="rendimento" id="rend${index}">RENDIMENTO: -</div>
 
 <button onclick="atualizarDia()">SALVAR DADOS</button>
@@ -640,7 +602,6 @@ onchange="calcularRendimento(${index})">
 `;
 });
 
-// EXIBIR AULAS DO SÁBADO DURANTE A SEMANA (modo informativo)
 if(diaSemana !== 6 && diaSemana !== 0 && !ehSemanaCarnaval(dataAtual)){
 
 if(aulasSabado.length > 0){
@@ -667,40 +628,36 @@ const chave = gerarChaveDia(dataAtual);
 const salvo = localStorage.getItem(chave);
 
 if(salvo){
-    const estados = JSON.parse(salvo);
+const estados = JSON.parse(salvo);
 
-    Object.keys(estados).forEach(key=>{
-        if(key.startsWith("concluido_") && estados[key] === true){
-            const index = key.replace("concluido_","");
-            const card = document.getElementById("card"+index);
-            if(card){
-                card.classList.add("finalizado");
-                const botao = card.querySelectorAll("button")[1];
-                if(botao) botao.innerText = "REABRIR TAREFA";
-            }
-        }
-    });
+Object.keys(estados).forEach(key=>{
+if(key.startsWith("concluido_") && estados[key] === true){
+const index = key.replace("concluido_","");
+const card = document.getElementById("card"+index);
+if(card){
+card.classList.add("finalizado");
+const botao = card.querySelectorAll("button")[1];
+if(botao) botao.innerText = "REABRIR TAREFA";
 }
-
+}
+});
+}
 
 if(document.getElementById("simFeitas")){
-    calcSimulado();
+calcSimulado();
 }
-
 
 ativos.forEach((x,index)=>{
-    calcularRendimento(index);
+calcularRendimento(index);
 });
 
-
 document.querySelectorAll("#saida input").forEach(input=>{
-    input.addEventListener("input", ()=>{
-        salvarDadosDia(dataAtual);
-    });
+input.addEventListener("input", ()=>{
+salvarDadosDia(dataAtual);
+});
 });
 
 }
-
 
 function calcularRendimento(i){
 
@@ -713,15 +670,14 @@ let feitas = parseInt(feitasInput.value) || 0;
 let erros = parseInt(errosInput.value) || 0;
 
 if(feitas > 0 && erros <= feitas){
-    let acertos = feitas - erros;
-    let perc = ((acertos / feitas) * 100).toFixed(1);
-    document.getElementById("rend"+i).innerHTML = "RENDIMENTO: " + perc + "%";
+let acertos = feitas - erros;
+let perc = ((acertos / feitas) * 100).toFixed(1);
+document.getElementById("rend"+i).innerHTML = "RENDIMENTO: " + perc + "%";
 }else{
-    document.getElementById("rend"+i).innerHTML = "RENDIMENTO: -";
+document.getElementById("rend"+i).innerHTML = "RENDIMENTO: -";
 }
 
 }
-
 
 function calcSimulado(){
 let feitas = parseInt(document.getElementById("simFeitas").value) || 0;
@@ -769,8 +725,6 @@ estados[idTarefa] = true;
 localStorage.setItem(chave, JSON.stringify(estados));
 }
 
-
-
 function toggleAula(i){
 
 let card = document.getElementById("aula"+i);
@@ -794,7 +748,7 @@ botao.innerText = "REABRIR AULA";
 
 const metaSalva = localStorage.getItem("meta_semanal");
 if(metaSalva){
-    META_SEMANAL = parseInt(metaSalva);
+META_SEMANAL = parseInt(metaSalva);
 }
 
 const hoje = new Date();
@@ -825,10 +779,6 @@ calcular();
 
 }
 
-/* =========================
-   MUDAR DATA COM SETAS E SWIPE
-========================= */
-
 function mudarData(dias){
 
 const input = document.getElementById("dataEscolhida");
@@ -854,18 +804,16 @@ function alterarMeta(){
 const valor = parseInt(document.getElementById("metaInput").value);
 
 if(valor && valor > 0){
-    META_SEMANAL = valor;
-    localStorage.setItem("meta_semanal", valor);
+META_SEMANAL = valor;
+localStorage.setItem("meta_semanal", valor);
 }else{
-    META_SEMANAL = 350;
-    localStorage.setItem("meta_semanal", 350);
+META_SEMANAL = 350;
+localStorage.setItem("meta_semanal", 350);
 }
 
 calcular();
 }
 
-
-/* SETAS DO TECLADO */
 document.addEventListener("keydown", function(e){
 if(e.key === "ArrowRight") mudarData(1);
 if(e.key === "ArrowLeft") mudarData(-1);
